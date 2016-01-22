@@ -23,7 +23,7 @@ namespace proc_navigation{
         node_handle_.param("mode", navigation_mode_, 0);
     }
     void NavNode::Spin() { }
-    void NavNode::dvlDataCallback(const provider_dvl::DVL msg) {
+    void NavNode::dvlDataCallback(const sonia_msgs::DVL msg) {
         ROS_INFO("received dvl msg");//m
     }
 }

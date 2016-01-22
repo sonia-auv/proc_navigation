@@ -20,6 +20,7 @@ find_package(
         std_msgs
         message_generation
         provider_dvl
+        sonia_msgs
         lib_atlas
 )
 
@@ -34,7 +35,7 @@ add_message_files(
 catkin_package(
         INCLUDE_DIRS ${proc_navigation_SRC_DIR}
         LIBRARIES
-        CATKIN_DEPENDS roscpp message_runtime std_msgs lib_atlas provider_dvl
+        CATKIN_DEPENDS roscpp message_runtime std_msgs provider_dvl sonia_msgs
 )
 ## System dependencies are found with CMake's conventions
 file(GLOB_RECURSE proc_navigation_FILES "${proc_navigation_SRC_DIR}/*.cc" "${proc_navigation_SRC_DIR}/*.h")
