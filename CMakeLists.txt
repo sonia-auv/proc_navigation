@@ -70,8 +70,8 @@ file(GLOB_RECURSE proc_navigation_FILES
     "${proc_navigation_SRC_DIR}/*.cc"
     "${proc_navigation_SRC_DIR}/*.h")
 
-list(REMOVE_ITEM provider_imu_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/${provider_imu_SRC_DIR}/${PROJECT_NAME}/main.cc)
+list(REMOVE_ITEM proc_navigation_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc)
 
 include_directories(
     ${catkin_INCLUDE_DIRS}
