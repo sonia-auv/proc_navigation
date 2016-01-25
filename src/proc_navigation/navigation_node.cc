@@ -34,7 +34,7 @@ NavNode::NavNode(ros::NodeHandle nh) : node_handle_() {
   if (navigation_mode_ == 0) {
     // Subscribe to AUV6 node, position topic
   } else if (navigation_mode_ == 1) {
-    subscriber_dvl_ = node_handle_.subscribe("data", 1000, dvlDataCallback);
+    subscriber_dvl_ = node_handle_.subscribe("data", 1000, &NavNode::dvlDataCallback, this);
     // publisher_ = node_handle_.advertise<provider_dvl::DVL>("data", 1000);
     // Subscribe to IMU and DVL
   }
@@ -56,7 +56,7 @@ void NavNode::Spin() { }
 
 //-----------------------------------------------------------------------------
 //
-void NavNode::dvlDataCallback(const sonia_msgs::DVL msg) {
+void NavNode::dvlDataCallback(const sonia_msgs::PD0Packet msg) {
   ROS_INFO("received dvl msg");  // m
 }
 
