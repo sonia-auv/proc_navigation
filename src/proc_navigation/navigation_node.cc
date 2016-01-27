@@ -84,7 +84,9 @@ void NavNode::imuDataCallback(sensor_msgs::Imu msg) {
 //
 void NavNode::auvDataCallback(geometry_msgs::Pose msg){
   ROS_INFO("received AUV6 msg");
-  //pose_msg_ = msg;
+  if (navigation_mode_ == 0) {
+    pose_msg_ = msg;
+  }
 }
 //-----------------------------------------------------------------------------
 // return -1 on error, TODO: Change that logic, throw exception instead
