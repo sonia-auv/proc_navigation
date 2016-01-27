@@ -34,7 +34,7 @@ namespace proc_navigation {
 NavNode::NavNode(ros::NodeHandle nh) : node_handle_(nh) {
   InitParameters();
   if (navigation_mode_ == 0) {
-    // Subscribe to AUV6 node, position topic
+    subscriber_auv6_ = node_handle_.subscribe("/auv6/pose", 100, &NavNode::auvDataCallback, this);
   } else if (navigation_mode_ == 1) {
     subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/pd0_packet", 100, &NavNode::dvlDataCallback, this);
     subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000, &NavNode::imuDataCallback, this);
@@ -79,6 +79,12 @@ void NavNode::dvlDataCallback(sonia_msgs::PD0Packet msg) {
 //
 void NavNode::imuDataCallback(sensor_msgs::Imu msg) {
   ROS_INFO("received IMU msg");
+}
+//-----------------------------------------------------------------------------
+//
+void NavNode::auvDataCallback(geometry_msgs::Pose msg){
+  ROS_INFO("received AUV6 msg");
+  //pose_msg_ = msg;
 }
 //-----------------------------------------------------------------------------
 // return -1 on error, TODO: Change that logic, throw exception instead

@@ -49,6 +49,7 @@ class NavNode {
  private:
   void dvlDataCallback(sonia_msgs::PD0Packet msg);
   void imuDataCallback(sensor_msgs::Imu msg);
+  void auvDataCallback(geometry_msgs::Pose msg);
 
   void InitParameters();
 
