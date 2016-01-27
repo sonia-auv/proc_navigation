@@ -28,7 +28,9 @@
 
 #include <ros/ros.h>
 #include <memory>
+#include <geometry_msgs/Pose.h>
 #include <sonia_msgs/PD0Packet.h>
+#include <sensor_msgs/Imu.h>
 
 namespace proc_navigation {
 
@@ -40,22 +42,33 @@ class NavNode {
 
   void Spin();
 
+  int Start();
+  void Stop();
+  int PublishData();
+
  private:
-    void dvlDataCallback(const sonia_msgs::PD0Packet msg);
+  void dvlDataCallback(sonia_msgs::PD0Packet msg);
+  void imuDataCallback(sensor_msgs::Imu msg);
 
   void InitParameters();
 
   ros::NodeHandle node_handle_;
 
   ros::Subscriber subscriber_dvl_;
+  ros::Subscriber subscriber_imu_;
+  ros::Subscriber subscriber_auv6_;
+
+  ros::Publisher nav_pose_pub;
 
   //-- Mode is temporary so we can switch from AUV6 interface to DVL/IMU
   //interface
   //-- 0: AUV6
   //-- 1: IMU/DVL
   int navigation_mode_;
+  // -- Contains both Attitude and Position
+  geometry_msgs::Pose pose_msg_;
 };
 
-} // namespace proc_navigation
+}
 
 #endif  // PROC_NAVIGATION_NAVIGATION_NODE_H_

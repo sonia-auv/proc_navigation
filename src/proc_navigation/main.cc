@@ -28,4 +28,10 @@
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "proc_navigation_node");
+
+  ros::NodeHandle nh;
+
+  proc_navigation::NavNode ph(nh);
+
+  ph.Spin();
 }

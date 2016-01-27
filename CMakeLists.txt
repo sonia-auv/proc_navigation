@@ -49,6 +49,8 @@ find_package(
     message_generation
     provider_dvl
     sonia_msgs
+    geometry_msgs
+        sensor_msgs
     lib_atlas
 )
 
