@@ -31,6 +31,7 @@
 #include <geometry_msgs/Pose.h>
 #include <sonia_msgs/PD0Packet.h>
 #include <sensor_msgs/Imu.h>
+#include <nav_msgs/Odometry.h>
 
 namespace proc_navigation {
 
@@ -49,7 +50,8 @@ class NavNode {
  private:
   void dvlDataCallback(sonia_msgs::PD0Packet msg);
   void imuDataCallback(sensor_msgs::Imu msg);
-  void auvDataCallback(geometry_msgs::Pose msg);
+  void auvPositionCallback(geometry_msgs::Pose msg);
+  void auvAttitudeCallback(geometry_msgs::Pose msg);
 
   void InitParameters();
 
@@ -57,7 +59,8 @@ class NavNode {
 
   ros::Subscriber subscriber_dvl_;
   ros::Subscriber subscriber_imu_;
-  ros::Subscriber subscriber_auv6_;
+  ros::Subscriber subscriber_auv6_position;
+  ros::Subscriber subscriber_auv6_attitude;
 
   ros::Publisher nav_pose_pub;
 
@@ -67,7 +70,7 @@ class NavNode {
   //-- 1: IMU/DVL
   int navigation_mode_;
   // -- Contains both Attitude and Position
-  geometry_msgs::Pose pose_msg_;
+  nav_msgs::Odometry odometry_msg_;
 };
 
 }
