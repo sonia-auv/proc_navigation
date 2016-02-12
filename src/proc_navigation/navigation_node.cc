@@ -35,8 +35,8 @@ namespace proc_navigation {
 NavNode::NavNode(ros::NodeHandle nh) : node_handle_(nh) {
   InitParameters();
   if (navigation_mode_ == 0) {
-    subscriber_auv6_attitude = node_handle_.subscribe("/auv6/pose_attitude", 100, &NavNode::auvPositionCallback, this);
-    subscriber_auv6_position = node_handle_.subscribe("/auv6/pose_position", 100, &NavNode::auvAttitudeCallback, this);
+    subscriber_auv6_attitude = node_handle_.subscribe("/auv6/pose_attitude", 100, &NavNode::auvAttitudeCallback, this);
+    subscriber_auv6_position = node_handle_.subscribe("/auv6/pose_position", 100, &NavNode::auvPositionCallback, this);
   } else if (navigation_mode_ == 1) {
     subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/pd0_packet", 100, &NavNode::dvlDataCallback, this);
     subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000, &NavNode::imuDataCallback, this);
@@ -53,7 +53,7 @@ NavNode::~NavNode() { }
 //-----------------------------------------------------------------------------
 //
 void NavNode::InitParameters() {
-  node_handle_.param("mode", navigation_mode_, 1);
+  node_handle_.param("mode", navigation_mode_, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -88,10 +88,7 @@ void NavNode::imuDataCallback(sensor_msgs::Imu msg) {
 void NavNode::auvPositionCallback(geometry_msgs::Pose msg){
   ROS_INFO("received AUV6 msg");
   if (navigation_mode_ == 0) {
-    odometry_msg_.pose.pose.position.x = msg.position.x;
-    odometry_msg_.pose.pose.position.y = msg.position.y;
-    odometry_msg_.pose.pose.position.z = msg.position.z;
-    //pose_msg_
+    odometry_msg_.pose.pose.position = msg.position;
   }
 }
 //-----------------------------------------------------------------------------
@@ -99,11 +96,7 @@ void NavNode::auvPositionCallback(geometry_msgs::Pose msg){
 void NavNode::auvAttitudeCallback(geometry_msgs::Pose msg){
   ROS_INFO("received AUV6 msg");
   if (navigation_mode_ == 0) {
-    odometry_msg_.pose.pose.orientation.x = msg.orientation.x;
-    odometry_msg_.pose.pose.orientation.y = msg.orientation.y;
-    odometry_msg_.pose.pose.orientation.z = msg.orientation.z;
-    odometry_msg_.pose.pose.orientation.w = msg.orientation.w;
-    //pose_msg_
+    odometry_msg_.pose.pose.orientation = msg.orientation;
   }
 }
 
