@@ -71,7 +71,7 @@ class NavNode {
   int navigation_mode_;
   // -- Contains both Attitude and Position
   nav_msgs::Odometry odometry_msg_;
-  nav_msgs::Odometry odometry_buffer;
+  bool odometry_msg_is_complete_;
 };
 
 }

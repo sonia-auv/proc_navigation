@@ -88,7 +88,7 @@ void NavNode::imuDataCallback(sensor_msgs::Imu msg) {
 void NavNode::auvPositionCallback(geometry_msgs::Pose msg){
   ROS_INFO("received AUV6 msg");
   if (navigation_mode_ == 0) {
-    odometry_buffer.pose.pose.position = msg.position;
+    odometry_msg_.pose.pose.position = msg.position;
   }
 }
 //-----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ void NavNode::auvAttitudeCallback(geometry_msgs::Pose msg){
   ROS_INFO("received AUV6 msg");
   if (navigation_mode_ == 0) {
     odometry_msg_.pose.pose.orientation = msg.orientation;
-    odometry_msg_.pose.pose.position = odometry_buffer.pose.pose.position;
+    odometry_msg_is_complete_ = true;
   }
 }
 
@@ -115,7 +115,10 @@ void NavNode::Stop() {
 //-----------------------------------------------------------------------------
 // return -1 on error, TODO: Change that logic
 int NavNode::PublishData() {
-  nav_pose_pub.publish(odometry_msg_);
+  if (odometry_msg_is_complete_){
+    nav_pose_pub.publish(odometry_msg_);
+    odometry_msg_is_complete_ = false;
+  }
   return 1;
 }
 
