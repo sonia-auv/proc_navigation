@@ -27,7 +27,6 @@
 #include <geometry_msgs/Pose.h>
 #include "navigation_node.h"
 
-
 namespace proc_navigation {
 
 //-----------------------------------------------------------------------------
@@ -35,20 +34,25 @@ namespace proc_navigation {
 NavNode::NavNode(ros::NodeHandle nh) : node_handle_(nh) {
   InitParameters();
   if (navigation_mode_ == 0) {
-    subscriber_auv6_attitude = node_handle_.subscribe("/auv6/pose_attitude", 100, &NavNode::auvAttitudeCallback, this);
-    subscriber_auv6_position = node_handle_.subscribe("/auv6/pose_position", 100, &NavNode::auvPositionCallback, this);
+    subscriber_auv6_attitude = node_handle_.subscribe(
+        "/auv6/pose_attitude", 100, &NavNode::auvAttitudeCallback, this);
+    subscriber_auv6_position = node_handle_.subscribe(
+        "/auv6/pose_position", 100, &NavNode::auvPositionCallback, this);
   } else if (navigation_mode_ == 1) {
-    subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/pd0_packet", 100, &NavNode::dvlDataCallback, this);
-    subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000, &NavNode::imuDataCallback, this);
+    subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/pd0_packet", 100,
+                                             &NavNode::dvlDataCallback, this);
+    subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000,
+                                             &NavNode::imuDataCallback, this);
   }
-  // - TODO: Change to Odometry msgs http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html
-  nav_pose_pub = node_handle_.advertise<nav_msgs::Odometry>("/proc_navigation/Odometry", 100);
-
+  // - TODO: Change to Odometry msgs
+  // http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html
+  nav_pose_pub =
+      node_handle_.advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 }
 
 //-----------------------------------------------------------------------------
 //
-NavNode::~NavNode() { }
+NavNode::~NavNode() {}
 
 //-----------------------------------------------------------------------------
 //
@@ -76,7 +80,7 @@ void NavNode::Spin() {
 //-----------------------------------------------------------------------------
 //
 void NavNode::dvlDataCallback(sonia_msgs::PD0Packet msg) {
-    ROS_INFO("received DVL msg");
+  ROS_INFO("received DVL msg");
 }
 //-----------------------------------------------------------------------------
 //
@@ -85,14 +89,14 @@ void NavNode::imuDataCallback(sensor_msgs::Imu msg) {
 }
 //-----------------------------------------------------------------------------
 //
-void NavNode::auvPositionCallback(geometry_msgs::Pose msg){
+void NavNode::auvPositionCallback(geometry_msgs::Pose msg) {
   if (navigation_mode_ == 0) {
     odometry_msg_.pose.pose.position = msg.position;
   }
 }
 //-----------------------------------------------------------------------------
 //
-void NavNode::auvAttitudeCallback(geometry_msgs::Pose msg){
+void NavNode::auvAttitudeCallback(geometry_msgs::Pose msg) {
   if (navigation_mode_ == 0) {
     odometry_msg_.pose.pose.orientation = msg.orientation;
     odometry_msg_is_complete_ = true;
@@ -101,23 +105,20 @@ void NavNode::auvAttitudeCallback(geometry_msgs::Pose msg){
 
 //-----------------------------------------------------------------------------
 // return -1 on error, TODO: Change that logic, throw exception instead
-int NavNode::Start() {
-  return 1;
-}
+int NavNode::Start() { return 1; }
 //-----------------------------------------------------------------------------
 //
-void NavNode::Stop() {
-
-}
+void NavNode::Stop() {}
 
 //-----------------------------------------------------------------------------
 // return -1 on error, TODO: Change that logic
 int NavNode::PublishData() {
-  if (odometry_msg_is_complete_){
+  if (odometry_msg_is_complete_) {
+    odometry_msg_.header.frame_id = "NED";
     nav_pose_pub.publish(odometry_msg_);
     odometry_msg_is_complete_ = false;
   }
   return 1;
 }
 
-} // namespace proc_navigation
+}  // namespace proc_navigation
