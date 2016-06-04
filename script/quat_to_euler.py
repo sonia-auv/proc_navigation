@@ -7,7 +7,7 @@ import roslib
 
 roslib.load_manifest(PKG)
 import rospy
-from math import atan2, asin
+from math import atan2, asin, sqrt
 
 # ROS messages.
 from nav_msgs.msg import Odometry
@@ -19,6 +19,7 @@ class QuatToEuler:
     """ Class that subscribe to different ROS topics
         and output euler angles messages
     """
+
     def __init__(self):
         # Create subscribers and publishers.
         self.sub_imu = rospy.Subscriber("imu", Imu, self.imu_callback)
@@ -39,21 +40,20 @@ class QuatToEuler:
              msg.pose.pose.orientation.x,
              msg.pose.pose.orientation.y,
              msg.pose.pose.orientation.z)
-        r = atan2(2*(b[2]*b[3] - b[0]*b[1]),1 - 2*(b[1]*b[1] + b[2]*b[2]))
-        p = asin(-2*(b[1]*b[3] + b[0]*b[2]))
-        y = atan2(2*(b[1]*b[2] - b[0]*b[3]),1 - 2*(b[2]*b[2] + b[3]*b[3]))
 
-        euler_msg = self.quat_to_euler_msg(msg, r, p, y)
+        e = self.quat_to_euler(b)
+        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[3])
+
         self.pub_euler_imu.publish(euler_msg)
 
     # IMU callback function.
     def imu_callback(self, msg):
-        b = (msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z)
-        r = atan2(2*(b[2]*b[3] - b[0]*b[1]),1 - 2*(b[1]*b[1] + b[2]*b[2]))
-        p = asin(-2*(b[1]*b[3] + b[0]*b[2]))
-        y = atan2(2*(b[1]*b[2] - b[0]*b[3]),1 - 2*(b[2]*b[2] + b[3]*b[3]))
+        b = (msg.orientation.w, msg.orientation.x, msg.orientation.y,
+             msg.orientation.z)
 
-        euler_msg = self.quat_to_euler_msg(msg, r, p, y)
+        e = self.quat_to_euler(b)
+        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[3])
+
         self.pub_euler_imu.publish(euler_msg)
 
     # Fill in Euler angle message.
@@ -65,6 +65,34 @@ class QuatToEuler:
         euler_msg.pitch = p
         euler_msg.yaw = y
         return euler_msg
+
+    def normalize_quat(self, b):
+        n = b[0] ^ 2 + b[1] ^ 2 + b[2] ^ 2 + b[3] ^ 2
+        if n == 1:
+            return b
+        normalized_b = b
+        n = 1 / sqrt(n)
+        normalized_b[0] = b[0] * n
+        normalized_b[1] = b[1] * n
+        normalized_b[2] = b[2] * n
+        normalized_b[3] = b[3] * n
+
+    def quat_to_euler(self, b):
+        b = self.normalize_quat(b)
+        e = []
+        asin_input = -2 * (b[1] * b[3] - b[0] * b[2])
+
+        if asin_input > 1:
+            asin_input = 1
+
+        e[0] = atan2(2 * (b[2] * b[3] + b[0] * b[1]),
+                     b[0] * b[0] - b[1] * b[1] -
+                     b[2] * b[2] + b[3] * b[3])
+        e[1] = asin_input
+        e[2] = atan2(2 * (b[1] * b[2] + b[0] * b[3]),
+                     b[0] * b[0] + b[1] * b[1] -
+                     b[2] * b[2] - b[3] * b[3])
+        return e
 
 
 # Main function.
