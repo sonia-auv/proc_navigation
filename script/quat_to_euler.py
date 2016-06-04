@@ -37,23 +37,23 @@ class QuatToEuler:
 
     # Odometry callback function.
     def odom_callback(self, msg):
-        b = (msg.pose.pose.orientation.w,
+        b = [msg.pose.pose.orientation.w,
              msg.pose.pose.orientation.x,
              msg.pose.pose.orientation.y,
-             msg.pose.pose.orientation.z)
+             msg.pose.pose.orientation.z]
 
         e = self.quat_to_euler(b)
-        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[3])
+        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[2])
 
         self.pub_euler_imu.publish(euler_msg)
 
     # IMU callback function.
     def imu_callback(self, msg):
-        b = (msg.orientation.w, msg.orientation.x, msg.orientation.y,
-             msg.orientation.z)
+        b = [msg.orientation.w, msg.orientation.x, msg.orientation.y,
+             msg.orientation.z]
 
         e = self.quat_to_euler(b)
-        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[3])
+        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[2])
 
         self.pub_euler_imu.publish(euler_msg)
 
@@ -77,10 +77,11 @@ class QuatToEuler:
         normalized_b[1] = b[1] * n
         normalized_b[2] = b[2] * n
         normalized_b[3] = b[3] * n
+	return normalized_b
 
     def quat_to_euler(self, b):
         b = self.normalize_quat(b)
-        e = []
+        e = [0] * 3
         asin_input = (-2 * (b[1] * b[3] - b[0] * b[2]))
 
         if asin_input > 1:
