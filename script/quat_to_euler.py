@@ -22,7 +22,8 @@ class QuatToEuler:
 
     def __init__(self):
         # Create subscribers and publishers.
-        self.sub_imu = rospy.Subscriber("/provider_imu/imu", Imu, self.imu_callback)
+        self.sub_imu = rospy.Subscriber("/provider_imu/imu", Imu,
+                                        self.imu_callback)
         self.sub_odom = rospy.Subscriber("/proc_navigation/odom", Odometry,
                                          self.odom_callback)
         self.pub_euler_odom = rospy.Publisher("/proc_navigation/euler_odom",
@@ -67,7 +68,7 @@ class QuatToEuler:
         return euler_msg
 
     def normalize_quat(self, b):
-        n = b[0] ^ 2 + b[1] ^ 2 + b[2] ^ 2 + b[3] ^ 2
+        n = b[0] * b[0] + b[1] * b[1] + b[2] * b[2] + b[3] * b[3]
         if n == 1:
             return b
         normalized_b = b
@@ -80,7 +81,7 @@ class QuatToEuler:
     def quat_to_euler(self, b):
         b = self.normalize_quat(b)
         e = []
-        asin_input = -2 * (b[1] * b[3] - b[0] * b[2])
+        asin_input = (-2 * (b[1] * b[3] - b[0] * b[2]))
 
         if asin_input > 1:
             asin_input = 1
@@ -88,7 +89,7 @@ class QuatToEuler:
         e[0] = atan2(2 * (b[2] * b[3] + b[0] * b[1]),
                      b[0] * b[0] - b[1] * b[1] -
                      b[2] * b[2] + b[3] * b[3])
-        e[1] = asin_input
+        e[1] = asin(asin_input)
         e[2] = atan2(2 * (b[1] * b[2] + b[0] * b[3]),
                      b[0] * b[0] + b[1] * b[1] -
                      b[2] * b[2] - b[3] * b[3])
