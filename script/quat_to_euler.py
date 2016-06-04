@@ -22,7 +22,7 @@ class QuatToEuler:
 
     def __init__(self):
         # Create subscribers and publishers.
-        self.sub_imu = rospy.Subscriber("imu", Imu, self.imu_callback)
+        self.sub_imu = rospy.Subscriber("/provider_imu/imu", Imu, self.imu_callback)
         self.sub_odom = rospy.Subscriber("/proc_navigation/odom", Odometry,
                                          self.odom_callback)
         self.pub_euler_odom = rospy.Publisher("/proc_navigation/euler_odom",
