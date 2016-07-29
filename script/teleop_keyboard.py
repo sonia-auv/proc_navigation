@@ -38,8 +38,8 @@ move_bindings = {
     's': (-0.5, 0, 0, 0),
     'a': (0, 0.5, 0, 0),
     'd': (0, -0.5, 0, 0),
-    'r': (0, 0, 0.5, 0),
-    'f': (0, 0, -0.5, 0),
+    'r': (0, 0, -0.5, 0),
+    'f': (0, 0, 0.5, 0),
     'q': (0, 0, 0, 0.5),
     'e': (0, 0, 0, -0.5),
 }
@@ -121,6 +121,7 @@ def get_odom_from_key():
         x += move_bindings[key][0]
         y += move_bindings[key][1]
         z += move_bindings[key][2]
+        z = max(z, 0)
 
         th += move_bindings[key][3]
         th = clamp(th, -math.pi, math.pi)
@@ -136,6 +137,7 @@ if __name__ == "__main__":
 
     dvl_pub = rospy.Publisher('/provider_dvl/bottom_tracking', BottomTracking, queue_size=100)
     imu_pub = rospy.Publisher('/provider_imu/imu', Imu, queue_size=100)
+    baro_pub = rospy.Publisher('/provider_can/barometer_fluidpress_msgs', FluidPressure, queue_size=100)
     rospy.init_node('teleop_keyboard')
 
     x = 0
@@ -157,6 +159,11 @@ if __name__ == "__main__":
         bottom_tracking.velocity[2] = 0
 
         pressure = FluidPressure()
+        # Saunder-Fofonoff equation
+        surface_pressure = 101325
+        ge = 9.80
+        rho_water = 1000
+        pressure.fluid_pressure = z * (rho_water * ge) + surface_pressure
 
         imu = Imu()
         quaternion = euler_to_quat(0, 0, th)
@@ -167,3 +174,4 @@ if __name__ == "__main__":
 
         imu_pub.publish(imu)
         dvl_pub.publish(bottom_tracking)
+        baro_pub.publish(pressure)
