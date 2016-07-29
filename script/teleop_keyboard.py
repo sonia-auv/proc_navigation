@@ -8,6 +8,8 @@ roslib.load_manifest('proc_navigation')
 import rospy
 
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu, FluidPressure
+from sonia_msgs.msg import BottomTracking
 
 import sys, select, termios, tty
 
@@ -32,14 +34,14 @@ CTRL-C to quit
 """
 
 move_bindings = {
-    'w': (1, 0, 0, 0),
-    's': (-1, 0, 0, 0),
-    'a': (0, -1, 0, 0),
-    'd': (0, 1, 0, 0),
-    'r': (0, 0, 1, 0),
-    'f': (0, 0, -1, 0),
-    'q': (0, 0, 0, 1),
-    'e': (0, 0, 0, -1),
+    'w': (0.5, 0, 0, 0),
+    's': (-0.5, 0, 0, 0),
+    'a': (0, 0.5, 0, 0),
+    'd': (0, -0.5, 0, 0),
+    'r': (0, 0, 0.5, 0),
+    'f': (0, 0, -0.5, 0),
+    'q': (0, 0, 0, 0.5),
+    'e': (0, 0, 0, -0.5),
 }
 
 
@@ -102,6 +104,9 @@ def get_key():
     select.select([sys.stdin], [], [], 0)
     key = sys.stdin.read(1)
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
+
+    if key == '\x1b' or key == '\x03':
+        exit(0)
     return key
 
 
@@ -119,10 +124,6 @@ def get_odom_from_key():
 
         th += move_bindings[key][3]
         th = clamp(th, -math.pi, math.pi)
-
-        if status == 14:
-            print msg
-        status = (status + 1) % 15
     else:
         x = 0
         y = 0
@@ -133,7 +134,8 @@ def get_odom_from_key():
 if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
 
-    pub = rospy.Publisher('/proc_mapping/odom', Odometry, queue_size=1)
+    dvl_pub = rospy.Publisher('/provider_dvl/bottom_tracking', BottomTracking, queue_size=100)
+    imu_pub = rospy.Publisher('/provider_imu/imu', Imu, queue_size=100)
     rospy.init_node('teleop_keyboard')
 
     x = 0
@@ -143,23 +145,25 @@ if __name__ == "__main__":
     status = 0
 
     current_odometry = Odometry()
+    current_key = None
 
     print msg
     while True:
         get_odom_from_key()
 
-        odom = Odometry()
-        odom.pose.pose.position.x = x
-        odom.pose.pose.position.y = y
-        odom.pose.pose.position.z = z
+        bottom_tracking = BottomTracking()
+        bottom_tracking.velocity[0] = x
+        bottom_tracking.velocity[1] = y
+        bottom_tracking.velocity[2] = 0
 
+        pressure = FluidPressure()
+
+        imu = Imu()
         quaternion = euler_to_quat(0, 0, th)
+        imu.orientation.x = quaternion[0]
+        imu.orientation.y = quaternion[1]
+        imu.orientation.z = quaternion[2]
+        imu.orientation.w = quaternion[3]
 
-        odom.pose.pose.orientation.x = quaternion[0]
-        odom.pose.pose.orientation.y = quaternion[1]
-        odom.pose.pose.orientation.z = quaternion[2]
-        odom.pose.pose.orientation.w = quaternion[3]
-
-        pub.publish(odom)
-
-        current_odometry = odom
+        imu_pub.publish(imu)
+        dvl_pub.publish(bottom_tracking)
