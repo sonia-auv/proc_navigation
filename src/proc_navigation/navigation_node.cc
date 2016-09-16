@@ -25,27 +25,20 @@
 
 #include <std_msgs/String.h>
 #include <geometry_msgs/Pose.h>
-#include "navigation_node.h"
+#include "proc_navigation/navigation_node.h"
 
 namespace proc_navigation {
 
 //-----------------------------------------------------------------------------
 //
 NavNode::NavNode(ros::NodeHandle nh) : node_handle_(nh) {
-  InitParameters();
-  if (navigation_mode_ == 0) {
-    subscriber_auv6_attitude = node_handle_.subscribe(
-        "/auv6/pose_attitude", 100, &NavNode::auvAttitudeCallback, this);
-    subscriber_auv6_position = node_handle_.subscribe(
-        "/auv6/pose_position", 100, &NavNode::auvPositionCallback, this);
-  } else if (navigation_mode_ == 1) {
-    subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/pd0_packet", 100,
-                                             &NavNode::dvlDataCallback, this);
-    subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000,
-                                             &NavNode::imuDataCallback, this);
-  }
-  // - TODO: Change to Odometry msgs
-  // http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html
+  subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/pd0_packet", 100,
+                                           &DVLData::BottomTrackingCallback, &dvl_data_);
+  subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000,
+                                           &IMUData::IMUMsgCallback, &imu_data_);
+  subscriber_depth_meter_ = node_handle_.subscribe("/provider_can/barometer_fluidpress_msgs", 1000,
+                                                   &DepthMeterData::DepthMeterCallback,
+                                                   &depth_meter_data_);
   nav_pose_pub =
       node_handle_.advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 }
@@ -56,69 +49,45 @@ NavNode::~NavNode() {}
 
 //-----------------------------------------------------------------------------
 //
-void NavNode::InitParameters() {
-  node_handle_.param("mode", navigation_mode_, 0);
-}
-
-//-----------------------------------------------------------------------------
-//
-void NavNode::Spin() {
-
-  while (!ros::isShuttingDown()) {
-    if (Start() > 0) {
-      while (node_handle_.ok()) {
-        if (PublishData() < 0) break;
-        ros::spinOnce();
-      }
-    } else {
-      usleep(100000);
-      ros::spinOnce();
-    }
+void NavNode::Spin()
+{
+  ros::Rate r(10); // 100 hz
+  while(ros::ok())
+  {
+    PublishData();
+    ros::spinOnce();
+    r.sleep();
   }
 }
 
 //-----------------------------------------------------------------------------
 //
-void NavNode::dvlDataCallback(sonia_msgs::PD0Packet msg) {
-  ROS_INFO("received DVL msg");
-}
-//-----------------------------------------------------------------------------
-//
-void NavNode::imuDataCallback(sensor_msgs::Imu msg) {
-  ROS_INFO("received IMU msg");
-}
-//-----------------------------------------------------------------------------
-//
-void NavNode::auvPositionCallback(geometry_msgs::Pose msg) {
-  if (navigation_mode_ == 0) {
-    odometry_msg_.pose.pose.position = msg.position;
-  }
-}
-//-----------------------------------------------------------------------------
-//
-void NavNode::auvAttitudeCallback(geometry_msgs::Pose msg) {
-  if (navigation_mode_ == 0) {
-    odometry_msg_.pose.pose.orientation = msg.orientation;
-    odometry_msg_is_complete_ = true;
-  }
-}
+void NavNode::PublishData() {
+  if (dvl_data_.IsNewDataReady() &&
+      imu_data_.IsNewDataReady() &&
+      depth_meter_data_.IsNewDataReady()) {
 
-//-----------------------------------------------------------------------------
-// return -1 on error, TODO: Change that logic, throw exception instead
-int NavNode::Start() { return 1; }
-//-----------------------------------------------------------------------------
-//
-void NavNode::Stop() {}
+    nav_msgs::Odometry odometry_msg;
+    odometry_msg.header.frame_id = "NED";
+    odometry_msg.header.stamp = ros::Time::now();
 
-//-----------------------------------------------------------------------------
-// return -1 on error, TODO: Change that logic
-int NavNode::PublishData() {
-  if (odometry_msg_is_complete_) {
-    odometry_msg_.header.frame_id = "NED";
-    nav_pose_pub.publish(odometry_msg_);
-    odometry_msg_is_complete_ = false;
+    // Fill the position
+    Eigen::Vector3d position, euler_angle;
+    Eigen::Quaterniond quaternion;
+    double depth;
+    dvl_data_.GetPositionXYZ(position);
+    imu_data_.GetQuaternion(quaternion);
+    imu_data_.GetOrientation(euler_angle);
+    depth_meter_data_.GetDepth(depth);
+
+    // We use the depth from the depth meter.
+    position.z() = depth;
+
+    FillPoseMsg(position, quaternion, odometry_msg);
+    FillTwistMsg(position, euler_angle, odometry_msg);
+
+    nav_pose_pub.publish(odometry_msg);
   }
-  return 1;
 }
 
 }  // namespace proc_navigation

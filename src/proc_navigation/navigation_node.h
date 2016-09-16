@@ -32,6 +32,9 @@
 #include <sonia_msgs/PD0Packet.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
+#include "DVLData.h"
+#include "IMUData.h"
+#include "DepthMeterData.h"
 
 namespace proc_navigation {
 
@@ -43,37 +46,48 @@ class NavNode {
 
   void Spin();
 
-  int Start();
-  void Stop();
-  int PublishData();
+  void PublishData();
 
  private:
-  void dvlDataCallback(sonia_msgs::PD0Packet msg);
-  void imuDataCallback(sensor_msgs::Imu msg);
-  void auvPositionCallback(geometry_msgs::Pose msg);
-  void auvAttitudeCallback(geometry_msgs::Pose msg);
 
-  void InitParameters();
-
+  void FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg);
+  void FillPoseMsg(const Eigen::Vector3d &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg);
   ros::NodeHandle node_handle_;
 
   ros::Subscriber subscriber_dvl_;
   ros::Subscriber subscriber_imu_;
-  ros::Subscriber subscriber_auv6_position;
-  ros::Subscriber subscriber_auv6_attitude;
+  ros::Subscriber subscriber_depth_meter_;
 
   ros::Publisher nav_pose_pub;
 
-  //-- Mode is temporary so we can switch from AUV6 interface to DVL/IMU
-  //interface
-  //-- 0: AUV6
-  //-- 1: IMU/DVL
-  int navigation_mode_;
-  // -- Contains both Attitude and Position
-  nav_msgs::Odometry odometry_msg_;
-  bool odometry_msg_is_complete_;
+  DVLData dvl_data_;
+  IMUData imu_data_;
+  DepthMeterData depth_meter_data_;
 };
+
+inline void NavNode::FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg)
+{
+  auto &twist = msg.twist.twist;
+  twist.linear.x = pos.x();
+  twist.linear.y = pos.y();
+  twist.linear.z = pos.z();
+  twist.angular.x = euler.x();
+  twist.angular.y = euler.y();
+  twist.angular.z = euler.z();
 
 }
 
+inline void NavNode::FillPoseMsg(const Eigen::Vector3d &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg)
+{
+  auto &pose = msg.pose.pose;
+  pose.position.x = pos.x();
+  pose.position.y = pos.y();
+  pose.position.z = pos.z();
+  pose.orientation.x = quat.x();
+  pose.orientation.y = quat.y();
+  pose.orientation.z = quat.z();
+  pose.orientation.w = quat.w();
+}
+
+}
 #endif  // PROC_NAVIGATION_NAVIGATION_NODE_H_
