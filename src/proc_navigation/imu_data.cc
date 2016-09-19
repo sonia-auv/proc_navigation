@@ -2,15 +2,15 @@
 // Created by jeremie on 9/14/16.
 //
 
-#include "proc_navigation/IMUData.h"
+#include "proc_navigation/imu_data.h"
 #include "lib_atlas/maths/matrix.h"
+namespace proc_navigation {
 
-void IMUData::IMUMsgCallback(sensor_msgs::Imu msg)
-{
+void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   quaternion = Eigen::Quaterniond(msg.orientation.w,
-                                     msg.orientation.x,
-                                     msg.orientation.y,
-                                     msg.orientation.z);
+                                  msg.orientation.x,
+                                  msg.orientation.y,
+                                  msg.orientation.z);
 
   // calculate euler angles for the orientation
   orientation_rpy_degree = atlas::QuatToEuler(quaternion);
@@ -23,4 +23,5 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg)
                                      msg.angular_velocity.y,
                                      msg.angular_velocity.z);
   SetNewDataReady();
+}
 }

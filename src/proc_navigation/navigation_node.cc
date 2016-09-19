@@ -31,14 +31,23 @@ namespace proc_navigation {
 
 //-----------------------------------------------------------------------------
 //
-NavNode::NavNode(ros::NodeHandle nh) : node_handle_(nh) {
-  subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/pd0_packet", 100,
+NavNode::NavNode(ros::NodeHandle nh) :
+    node_handle_(nh),
+    position_offset_(0,0,0)
+{
+  subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/bottom_tracking", 100,
                                            &DVLData::BottomTrackingCallback, &dvl_data_);
   subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000,
                                            &IMUData::IMUMsgCallback, &imu_data_);
   subscriber_depth_meter_ = node_handle_.subscribe("/provider_can/barometer_fluidpress_msgs", 1000,
                                                    &DepthMeterData::DepthMeterCallback,
                                                    &depth_meter_data_);
+
+  RegisterService<SetDepthOffset>("/proc_navigation/set_depth_offset",
+                               &NavNode::SetDepthOffsetCallback, *this);
+  RegisterService<SetWorldXYOffset>("/proc_navigation/set_world_x_y_offset",
+                                  &NavNode::SetWorldXYOffsetCallback, *this);
+
   nav_pose_pub =
       node_handle_.advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 }
@@ -51,7 +60,7 @@ NavNode::~NavNode() {}
 //
 void NavNode::Spin()
 {
-  ros::Rate r(10); // 100 hz
+  ros::Rate r(100); // 100 hz
   while(ros::ok())
   {
     PublishData();
@@ -63,9 +72,13 @@ void NavNode::Spin()
 //-----------------------------------------------------------------------------
 //
 void NavNode::PublishData() {
-  if (dvl_data_.IsNewDataReady() &&
-      imu_data_.IsNewDataReady() &&
+  if (dvl_data_.IsNewDataReady() ||
+      imu_data_.IsNewDataReady() ||
       depth_meter_data_.IsNewDataReady()) {
+
+    dvl_data_.SetNewDataUsed();
+    imu_data_.SetNewDataUsed();
+    depth_meter_data_.SetNewDataUsed();
 
     nav_msgs::Odometry odometry_msg;
     odometry_msg.header.frame_id = "NED";
@@ -82,6 +95,7 @@ void NavNode::PublishData() {
 
     // We use the depth from the depth meter.
     position.z() = depth;
+    position -= position_offset_;
 
     FillPoseMsg(position, quaternion, odometry_msg);
     FillTwistMsg(position, euler_angle, odometry_msg);

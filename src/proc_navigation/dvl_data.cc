@@ -4,36 +4,34 @@
 
 #include <ros/ros.h>
 #include <cmath>
-#include "proc_navigation/DVLData.h"
+#include "proc_navigation/dvl_data.h"
+
+namespace proc_navigation {
+
 
 DVLData::DVLData() :
-timestamp_us(-1),
-last_timestamp_us(-1),
-velocity_east(DBL_MAX),
-velocity_north(DBL_MAX),
-velocity_up(DBL_MAX)
-{
+    timestamp_us(-1),
+    last_timestamp_us(-1),
+    velocity_east(DBL_MAX),
+    velocity_north(DBL_MAX),
+    velocity_up(DBL_MAX) {
   position_xyz_m.fill(0.0f);
 }
 
 
-void DVLData::BottomTrackingCallback(sonia_msgs::BottomTracking msg)
-{
+void DVLData::BottomTrackingCallback(sonia_msgs::BottomTracking msg) {
   // If no NAN, set the values
-  if( !VerifyNAN(msg.velocity) )
-  {
+  if (!VerifyNAN(msg.velocity)) {
     // See p.195, search in page for: BT Velocity
     // Receive data as ENU
     velocity_east = msg.velocity[0];
     velocity_north = msg.velocity[1];
     velocity_up = msg.velocity[2];
     // For integration of speed.
-    if( last_timestamp_us != -1)
-    {
+    if (last_timestamp_us != -1) {
       last_timestamp_us = timestamp_us;
       timestamp_us = msg.time;
-    }else
-    {
+    } else {
       last_timestamp_us = msg.time;
       timestamp_us = msg.time;
     }
@@ -45,15 +43,15 @@ void DVLData::BottomTrackingCallback(sonia_msgs::BottomTracking msg)
 
     // Convert velocities to meter on the fly
     // Convert from ENU to NED
-    position_xyz_m[0] += (velocity_north/1000.0f) * time_delta_s;
-    position_xyz_m[1] += (velocity_east/1000.0f) * time_delta_s;
-    position_xyz_m[2] += (-velocity_up/1000.0f) * time_delta_s;
-
-  }else
-  {
-    ROS_INFO_STREAM( " DVL - Bottom tracking - Received NAN on velocity.\n" << msg);
+    position_xyz_m[0] += (velocity_north / 1000.0f) * time_delta_s;
+    position_xyz_m[1] += (velocity_east / 1000.0f) * time_delta_s;
+    position_xyz_m[2] += (-velocity_up / 1000.0f) * time_delta_s;
+  } else {
+    ROS_INFO_STREAM(
+        " DVL - Bottom tracking - Received NAN on velocity.\n" << msg);
   }
 
   SetNewDataReady();
 }
 
+}

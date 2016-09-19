@@ -32,13 +32,19 @@
 #include <sonia_msgs/PD0Packet.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
-#include "DVLData.h"
-#include "IMUData.h"
-#include "DepthMeterData.h"
+
+#include <lib_atlas/ros/service_server_manager.h>
+
+#include <proc_navigation/SetDepthOffset.h>
+#include <proc_navigation/SetWorldXYOffset.h>
+
+#include "dvl_data.h"
+#include "imu_data.h"
+#include "depth_meter_data.h"
 
 namespace proc_navigation {
 
-class NavNode {
+class NavNode : public atlas::ServiceServerManager<NavNode> {
  public:
   explicit NavNode(ros::NodeHandle nh);
 
@@ -49,6 +55,8 @@ class NavNode {
   void PublishData();
 
  private:
+  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
+  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
   void FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg);
   void FillPoseMsg(const Eigen::Vector3d &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg);
@@ -63,6 +71,10 @@ class NavNode {
   DVLData dvl_data_;
   IMUData imu_data_;
   DepthMeterData depth_meter_data_;
+
+  Eigen::Vector3d position_offset_;
+    double z_offset_, x_offset_, y_offset_;
+
 };
 
 inline void NavNode::FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg)
@@ -87,6 +99,25 @@ inline void NavNode::FillPoseMsg(const Eigen::Vector3d &pos, const Eigen::Quater
   pose.orientation.y = quat.y();
   pose.orientation.z = quat.z();
   pose.orientation.w = quat.w();
+}
+
+inline bool NavNode::SetDepthOffsetCallback(
+    SetDepthOffset::Request &rqst,
+    SetDepthOffset::Response &response)
+{
+  depth_meter_data_.GetDepth(position_offset_.z());
+  return true;
+}
+
+inline bool NavNode::SetWorldXYOffsetCallback(
+    SetWorldXYOffset::Request &rqst,
+    SetWorldXYOffset::Response &response)
+{
+  Eigen::Vector3d tmp;
+  dvl_data_.GetPositionXYZ(tmp);
+  position_offset_.x() = tmp.x();
+  position_offset_.y() = tmp.y();
+  return true;
 }
 
 }

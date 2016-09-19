@@ -14,7 +14,6 @@ class NedToBody:
         self.br = tf.TransformBroadcaster()
         self.sub_odom = rospy.Subscriber("/proc_navigation/odom", Odometry,
                                          self.odom_callback)
-
         while not rospy.is_shutdown():
             continue
 
@@ -27,7 +26,7 @@ class NedToBody:
              msg.pose.pose.orientation.y,
              msg.pose.pose.orientation.z,
              msg.pose.pose.orientation.w)
-
+	
         self.br.sendTransform(p, q, rospy.Time.now(), "BODY", "NED")
 
 

@@ -7,9 +7,10 @@
 
 #include <sensor_msgs/Imu.h>
 #include <eigen3/Eigen/Eigen>
-#include "proc_navigation/NavigationDevice.h"
+#include "proc_navigation/navigation_device.h"
+namespace proc_navigation {
 
-class IMUData : public NavigationDevice {
+class IMUData: public NavigationDevice {
  public:
   void IMUMsgCallback(sensor_msgs::Imu msg);
   void GetQuaternion(Eigen::Quaterniond &quat);
@@ -22,14 +23,12 @@ class IMUData : public NavigationDevice {
 };
 
 
-inline void IMUData::GetQuaternion(Eigen::Quaterniond &quat)
-{
+inline void IMUData::GetQuaternion(Eigen::Quaterniond &quat) {
   quat = quaternion;
 }
 
-inline void IMUData::GetOrientation(Eigen::Vector3d &rpy)
-{
+inline void IMUData::GetOrientation(Eigen::Vector3d &rpy) {
   rpy = orientation_rpy_degree;
 }
-
+}
 #endif //PROC_NAVIGATION_IMUDATA_HPP

@@ -50,13 +50,26 @@ find_package(
     provider_dvl
     sonia_msgs
     geometry_msgs
-        sensor_msgs
+    sensor_msgs
     lib_atlas
 )
 
 add_message_files(
     DIRECTORY msg
     FILES
+)
+
+add_service_files(
+        DIRECTORY srv
+        FILES
+        SetDepthOffset.srv
+        SetWorldXYOffset.srv
+)
+
+# Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs  # Or other packages containing msgs
 )
 
 catkin_package(
@@ -87,7 +100,9 @@ include_directories(
 
 add_executable(${PROJECT_NAME}_node ${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc ${proc_navigation_FILES})
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${lib_atlas_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_node sonia_msgs_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_node
+        sonia_msgs_generate_messages_cpp
+        ${PROJECT_NAME}_generate_messages_cpp)
 
 #==========================================================================
 # U N I T   T E S T S
