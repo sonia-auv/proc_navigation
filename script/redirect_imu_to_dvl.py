@@ -113,6 +113,9 @@ class ImuToDvl:
                      b[2] * b[2] - b[3] * b[3])
         return e
 
+class PassThroughOptionParser(OptionParser):
+    def error(self, msg):
+        pass
 
 def initialize_options():
     global parser, options, args
