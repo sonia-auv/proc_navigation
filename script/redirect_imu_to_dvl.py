@@ -37,31 +37,29 @@ class ImuToDvl:
         while not rospy.is_shutdown():
             continue
 
-    @staticmethod
-    def parse_and_send_to_serial(euler_msg):
-
-        resultString = '$PTNTHPR,'
-        resultString += '{:03.1f}'.format(euler_msg.yaw)
-        resultString += ',N,'
-        resultString += '{:03.1f}'.format(euler_msg.pitch)
-        resultString += ',N,'
-        resultString += '{:03.1f}'.format(euler_msg.roll)
-        resultString += ',N*'
-        resultString += getChecksum(resultString[1:resultString.len() - 1])
-        resultString += '\r\n'
-        print resultString
-        return resultString
-
-    @staticmethod
-    def getChecksum(str):
+    
+    def getChecksum(self, str):
         checksum = 0
         for c in str:
-            checksum += checksum ^ c
+            checksum += checksum ^ ord(c)
         return '{:02X}'.format(checksum & 0xFF)
+    
+    def parse_and_send_to_serial(self, euler_msg):
+        resultString = '$PTNTHPR,'
+
+	resultString += ("{:.1f}").format(euler_msg.yaw*57.2958)
+        resultString += ',N,'
+        resultString += ("{:.1f}").format(euler_msg.pitch*57.2958)
+        resultString += ',N,'
+        resultString += ("{:.1f}").format(euler_msg.roll*57.2958)
+        resultString += ',N*'
+        resultString += self.getChecksum(resultString[1:len(resultString) - 1])
+        resultString += '\r\n'
+        return resultString
+
 
     # Fill in Euler angle message.
-    @staticmethod
-    def quat_to_euler_msg(msg, r, p, y):
+    def quat_to_euler_msg(self, msg, r, p, y):
         euler_msg = Eulers()
         euler_msg.header.stamp = msg.header.stamp
 
@@ -110,7 +108,7 @@ class ImuToDvl:
 
         e = self.quat_to_euler(b)
         euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[2])
-        serial_msg = parse_and_send_to_serial(euler_msg)
+        serial_msg = self.parse_and_send_to_serial(euler_msg)
 
         self.serial.write(serial_msg)
 
