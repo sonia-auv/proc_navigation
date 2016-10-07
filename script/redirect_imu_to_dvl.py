@@ -37,18 +37,8 @@ class ImuToDvl:
         while not rospy.is_shutdown():
             continue
 
-    # IMU callback function.
-    def imu_callback(self, msg):
-        b = [msg.orientation.w, msg.orientation.x, msg.orientation.y,
-             msg.orientation.z]
-
-        e = self.quat_to_euler(b)
-        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[2])
-        serial_msg = parse_and_send_to_serial(euler_msg)
-
-        self.serial.write(serial_msg)
-
-    def parse_and_send_to_serial(self, euler_msg):
+    @staticmethod
+    def parse_and_send_to_serial(euler_msg):
 
         resultString = '$PTNTHPR,'
         resultString += '{:03.1f}'.format(euler_msg.yaw)
@@ -59,6 +49,7 @@ class ImuToDvl:
         resultString += ',N*'
         resultString += getChecksum(resultString[1:resultString.len() - 1])
         resultString += '\r\n'
+        print resultString
         return resultString
 
     @staticmethod
@@ -112,6 +103,16 @@ class ImuToDvl:
                      b[0] * b[0] + b[1] * b[1] -
                      b[2] * b[2] - b[3] * b[3])
         return e
+    # IMU callback function.
+    def imu_callback(self, msg):
+        b = [msg.orientation.w, msg.orientation.x, msg.orientation.y,
+             msg.orientation.z]
+
+        e = self.quat_to_euler(b)
+        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[2])
+        serial_msg = parse_and_send_to_serial(euler_msg)
+
+        self.serial.write(serial_msg)
 
 class PassThroughOptionParser(OptionParser):
     def error(self, msg):
