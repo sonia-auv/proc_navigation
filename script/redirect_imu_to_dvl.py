@@ -28,34 +28,63 @@ class ImuToDvl:
     """
 
     def __init__(self, serial):
+
+        self.HMR3000_QUERY_HPR = "$PTNT,HPR*78"
+        self.ACK_CMD = "#!0000*21\r\n"
         # Create subscribers and publishers.
         self.sub_imu = rospy.Subscriber("/provider_imu/imu", Imu,
                                         self.imu_callback)
         self.serial = serial
 
-        # Main while loop.
-        while not rospy.is_shutdown():
-            continue
+        self.roll = 0
+        self.pitch = 0
+        self.yaw = 0
 
-    
+    def _readline(self):
+        eol = b'\n'
+        leneol = len(eol)
+        line = bytearray()
+        while True:
+            c = self.ser.read(1)
+            if c:
+                line += c
+                if line[-leneol:] == eol:
+                    break
+            else:
+                break
+        return line
+
+    def loop(self):
+        readed_str = self._readline()
+        send_byte_array = bytearray("")
+
+        # Check if DVL has request a data, sends it
+        if self.HMR3000_QUERY_HPR in readed_str:
+            send_byte_array = self.convert_rpy_to_hmr3000_format()
+        else:
+            # Else acknowledge everything
+            send_byte_array = bytearray(self.ACK_CMD)
+
+        self.serial.write(send_byte_array )
+
+
     def getChecksum(self, str):
         checksum = 0
         for c in str:
             checksum += checksum ^ ord(c)
         return '{:02X}'.format(checksum & 0xFF)
-    
-    def parse_and_send_to_serial(self, euler_msg):
-        resultString = '$PTNTHPR,'
 
-	resultString += ("{:.1f}").format(euler_msg.yaw*57.2958)
+    def convert_rpy_to_hmr3000_format(self):
+        resultString = '$PTNTHPR,'
+        resultString += ("{:.1f}").format(self.yaw * 57.2958)
         resultString += ',N,'
-        resultString += ("{:.1f}").format(euler_msg.pitch*57.2958)
+        resultString += ("{:.1f}").format(self.pitch * 57.2958)
         resultString += ',N,'
-        resultString += ("{:.1f}").format(euler_msg.roll*57.2958)
+        resultString += ("{:.1f}").format(self.roll * 57.2958)
         resultString += ',N*'
         resultString += self.getChecksum(resultString[1:len(resultString) - 1])
         resultString += '\r\n'
-        return resultString
+        return bytearray(resultString)
 
 
     # Fill in Euler angle message.
@@ -73,6 +102,7 @@ class ImuToDvl:
         euler_msg.yaw = y
         return euler_msg
 
+
     def normalize_quat(self, b):
         n = b[0] * b[0] + b[1] * b[1] + b[2] * b[2] + b[3] * b[3]
         if n == 1:
@@ -84,6 +114,7 @@ class ImuToDvl:
         normalized_b[2] = b[2] * n
         normalized_b[3] = b[3] * n
         return normalized_b
+
 
     def quat_to_euler(self, b):
         b = self.normalize_quat(b)
@@ -101,6 +132,8 @@ class ImuToDvl:
                      b[0] * b[0] + b[1] * b[1] -
                      b[2] * b[2] - b[3] * b[3])
         return e
+
+
     # IMU callback function.
     def imu_callback(self, msg):
         b = [msg.orientation.w, msg.orientation.x, msg.orientation.y,
@@ -108,13 +141,15 @@ class ImuToDvl:
 
         e = self.quat_to_euler(b)
         euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[2])
-        serial_msg = self.parse_and_send_to_serial(euler_msg)
+        self.roll = euler_msg.roll
+        self.pitch = euler_msg.pitch
+        self.yaw = euler_msg.yaw
 
-        self.serial.write(serial_msg)
 
 class PassThroughOptionParser(OptionParser):
     def error(self, msg):
         pass
+
 
 def initialize_options():
     global parser, options, args
@@ -212,7 +247,6 @@ def init_serial_interface():
     if options.dtr_state is not None:
         ser.setDTR(options.dtr_state)
 
-
 # Main function.
 if __name__ == '__main__':
 
@@ -246,8 +280,10 @@ if __name__ == '__main__':
         try:
             init_serial_interface()
             sys.stdout.flush()
-            quat_to_euler = ImuToDvl(ser)
-
+            redirector = ImuToDvl(ser)
+            while(rospy.is_shutdown()):
+                rospy.spin()
+                redirector.loop()
             ser.close()
 
         except rospy.ROSInterruptException:
