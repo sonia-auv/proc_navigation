@@ -14,6 +14,9 @@ import socket
 import sys
 import threading
 import time
+from transforms3d import euler
+from transforms3d import quaternions
+
 from optparse import (OptionParser)
 
 # ROS messages.
@@ -45,7 +48,7 @@ class ImuToDvl:
         leneol = len(eol)
         line = bytearray()
         while True:
-            c = self.ser.read(1)
+            c = self.serial.read(1)
             if c:
                 line += c
                 if line[-leneol:] == eol:
@@ -60,90 +63,44 @@ class ImuToDvl:
 
         # Check if DVL has request a data, sends it
         if self.HMR3000_QUERY_HPR in readed_str:
-            send_byte_array = self.convert_rpy_to_hmr3000_format()
+	    send_byte_array = self.convert_rpy_to_hmr3000_format()
         else:
             # Else acknowledge everything
             send_byte_array = bytearray(self.ACK_CMD)
 
         self.serial.write(send_byte_array )
 
-
-    def getChecksum(self, str):
-        checksum = 0
-        for c in str:
-            checksum += checksum ^ ord(c)
-        return '{:02X}'.format(checksum & 0xFF)
+    def getChecksum(self, str_in):
+	checksum = ord('\0')
+        for c in str_in:
+            checksum = checksum ^ ord(c)
+	return '{:02X}'.format(checksum & 0xFF)
 
     def convert_rpy_to_hmr3000_format(self):
         resultString = '$PTNTHPR,'
-        resultString += ("{:.1f}").format(self.yaw * 57.2958)
+        resultString += ("{:.1f}").format(self.yaw)
         resultString += ',N,'
-        resultString += ("{:.1f}").format(self.pitch * 57.2958)
+        resultString += ("{:.1f}").format(self.pitch)
         resultString += ',N,'
-        resultString += ("{:.1f}").format(self.roll * 57.2958)
+        resultString += ("{:.1f}").format(self.roll)
         resultString += ',N*'
-        resultString += self.getChecksum(resultString[1:len(resultString) - 1])
+	resultString += self.getChecksum(resultString[1:len(resultString) - 1])
         resultString += '\r\n'
-        return bytearray(resultString)
-
-
-    # Fill in Euler angle message.
-    def quat_to_euler_msg(self, msg, r, p, y):
-        euler_msg = Eulers()
-        euler_msg.header.stamp = msg.header.stamp
-
-        if r > 180.0:
-            r -= 360.0
-        euler_msg.roll = r
-
-        if p > 180.0:
-            p -= 360.0
-        euler_msg.pitch = p
-        euler_msg.yaw = y
-        return euler_msg
-
-
-    def normalize_quat(self, b):
-        n = b[0] * b[0] + b[1] * b[1] + b[2] * b[2] + b[3] * b[3]
-        if n == 1:
-            return b
-        normalized_b = b
-        n = 1 / sqrt(n)
-        normalized_b[0] = b[0] * n
-        normalized_b[1] = b[1] * n
-        normalized_b[2] = b[2] * n
-        normalized_b[3] = b[3] * n
-        return normalized_b
-
-
-    def quat_to_euler(self, b):
-        b = self.normalize_quat(b)
-        e = [0] * 3
-        asin_input = (-2 * (b[1] * b[3] - b[0] * b[2]))
-
-        if asin_input > 1:
-            asin_input = 1
-
-        e[0] = atan2(2 * (b[2] * b[3] + b[0] * b[1]),
-                     b[0] * b[0] - b[1] * b[1] -
-                     b[2] * b[2] + b[3] * b[3])
-        e[1] = asin(asin_input)
-        e[2] = atan2(2 * (b[1] * b[2] + b[0] * b[3]),
-                     b[0] * b[0] + b[1] * b[1] -
-                     b[2] * b[2] - b[3] * b[3])
-        return e
-
+        #Debug
+	#print resultString
+	return bytearray(resultString)
 
     # IMU callback function.
     def imu_callback(self, msg):
-        b = [msg.orientation.w, msg.orientation.x, msg.orientation.y,
-             msg.orientation.z]
-
-        e = self.quat_to_euler(b)
-        euler_msg = self.quat_to_euler_msg(msg, e[0], e[1], e[2])
-        self.roll = euler_msg.roll
-        self.pitch = euler_msg.pitch
-        self.yaw = euler_msg.yaw
+	q = [msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z]
+	euler_vec = euler.quat2euler(q, 'sxyz')
+	
+        self.roll = euler_vec[0] * 57.2958
+        self.pitch = euler_vec[1] * 57.2958
+        self.yaw = euler_vec[2] * 57.2958
+	
+	# Debug
+	# print "RPY: " + str(self.roll) + " " + str(self.pitch) + " " + str(self.yaw)
 
 
 class PassThroughOptionParser(OptionParser):
@@ -276,15 +233,16 @@ if __name__ == '__main__':
 
     # Initialize the node and name it.
     rospy.init_node('redirect_imu_to_dvl')
-    while not rospy.is_shutdown():
-        try:
-            init_serial_interface()
-            sys.stdout.flush()
-            redirector = ImuToDvl(ser)
-            while(rospy.is_shutdown()):
-                rospy.spin()
-                redirector.loop()
-            ser.close()
+    try:
+        init_serial_interface()
+        print "Serial interface inited"
+        sys.stdout.flush()
+        redirector = ImuToDvl(ser)
+        print "Redirector is up"
+        while not rospy.is_shutdown():
+            redirector.loop()
+        print "Closing serial redirector"
+	ser.close()
 
-        except rospy.ROSInterruptException:
-            break
+    except rospy.ROSInterruptException:
+	print "ROS execption"
