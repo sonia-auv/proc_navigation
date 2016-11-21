@@ -46,8 +46,8 @@ void DVLData::BottomTrackingCallback(sonia_msgs::BottomTracking msg) {
     position_xyz_m[1] += (velocity_east) * time_delta_s;
     position_xyz_m[2] += (-velocity_up) * time_delta_s;
   } else {
-    ROS_INFO_STREAM(
-        " DVL - Bottom tracking - Received NAN on velocity.\n" << msg);
+//    ROS_INFO_STREAM(
+//        " DVL - Bottom tracking - Received NAN on velocity.\n" << msg);
   }
 
   SetNewDataReady();
