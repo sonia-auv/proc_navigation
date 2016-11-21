@@ -19,9 +19,11 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
                                         msg.linear_acceleration.y,
                                         msg.linear_acceleration.z);
 
-  angular_velocity = Eigen::Vector3d(msg.angular_velocity.x,
+  // We want our data to be [roll, pitch, yaw] but atlas returns it 
+  // in yaw pitch roll, so we inverse z and x
+  angular_velocity = Eigen::Vector3d(msg.angular_velocity.z,
                                      msg.angular_velocity.y,
-                                     msg.angular_velocity.z);
+                                     msg.angular_velocity.x);
   SetNewDataReady();
 }
 }
