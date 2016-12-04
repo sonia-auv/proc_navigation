@@ -23,13 +23,14 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   double m12 = 2 * (q1*q2 + q0*q3);
   double m13 = 2 * (q1*q3 - q0*q2);
 
-  double m21 = 2 * (q1*q2 - q0*q3);
-  double m22 = 2 * (q0*q0 - 0.5 + q2*q2);
+  //double m21 = 2 * (q1*q2 - q0*q3);
+  //double m22 = 2 * (q0*q0 - 0.5 + q2*q2);
   double m23 = 2 * (q2*q3 + q0*q1);
 
-  double m31 = 2 * (q1*q3 + q0*q2);
-  double m32 = 2 * (q2*q3 - q0*q1);
+  //double m31 = 2 * (q1*q3 + q0*q2);
+  //double m32 = 2 * (q2*q3 - q0*q1);
   double m33 = 2 * (q0*q0 - 0.5 + q3*q3);
+
   double pitch = std::asin(-m13);
   double roll = std::atan2(m23,m33);
   double yaw = std::atan2(m12, m11)+M_PI;
