@@ -43,7 +43,7 @@ void DVLData::BottomTrackingCallback(sonia_msgs::BottomTracking msg) {
     // Convert velocities to meter on the fly
     // Convert from ENU to NED
     position_xyz_m[0] += (velocity_north) * time_delta_s;
-    position_xyz_m[1] += (velocity_east) * time_delta_s;
+    position_xyz_m[1] += -1 * (velocity_east) * time_delta_s;
     position_xyz_m[2] += (-velocity_up) * time_delta_s;
   } else {
 //    ROS_INFO_STREAM(
