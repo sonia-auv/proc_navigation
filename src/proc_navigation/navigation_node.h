@@ -60,6 +60,7 @@ class NavNode : public atlas::ServiceServerManager<NavNode> {
 
   void FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg);
   void FillPoseMsg(const Eigen::Vector3d &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg);
+
   ros::NodeHandle node_handle_;
 
   ros::Subscriber subscriber_dvl_;
@@ -73,7 +74,6 @@ class NavNode : public atlas::ServiceServerManager<NavNode> {
   DepthMeterData depth_meter_data_;
 
   Eigen::Vector3d position_offset_;
-    double z_offset_, x_offset_, y_offset_;
 
 };
 
@@ -105,7 +105,7 @@ inline bool NavNode::SetDepthOffsetCallback(
     SetDepthOffset::Request &rqst,
     SetDepthOffset::Response &response)
 {
-  depth_meter_data_.GetDepth(position_offset_.z());
+  position_offset_.z() = depth_meter_data_.GetDepth();
   return true;
 }
 

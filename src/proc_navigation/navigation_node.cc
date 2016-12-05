@@ -39,7 +39,7 @@ NavNode::NavNode(ros::NodeHandle nh) :
                                            &DVLData::BottomTrackingCallback, &dvl_data_);
   subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000,
                                            &IMUData::IMUMsgCallback, &imu_data_);
-  subscriber_depth_meter_ = node_handle_.subscribe("/provider_can/barometer_fluidpress_msgs", 1000,
+  subscriber_depth_meter_ = node_handle_.subscribe("/provider_can/barometer_intern_press_msgs", 1000,
                                                    &DepthMeterData::DepthMeterCallback,
                                                    &depth_meter_data_);
 
@@ -91,10 +91,10 @@ void NavNode::PublishData() {
     dvl_data_.GetPositionXYZ(position);
     imu_data_.GetQuaternion(quaternion);
     imu_data_.GetOrientation(euler_angle);
-    depth_meter_data_.GetDepth(depth);
+    depth = depth_meter_data_.GetDepth();
 
     // We use the depth from the depth meter.
-    position.z() = depth;
+    position.z() = depth ;
     position -= position_offset_;
 
     FillPoseMsg(position, quaternion, odometry_msg);
