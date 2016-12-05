@@ -34,6 +34,7 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   double pitch = std::asin(-m13);
   double roll = std::atan2(m23,m33);
   double yaw = std::atan2(m12, m11) + M_PI;
+  yaw = (yaw + 180.0) % 360.0;
   orientation_rpy_degree = Eigen::Vector3d(atlas::RadianToDegree(roll),
                                            atlas::RadianToDegree(pitch),
                                            atlas::RadianToDegree(yaw) );
