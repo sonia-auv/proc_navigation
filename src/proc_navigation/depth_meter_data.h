@@ -7,7 +7,7 @@
 
 #include <sensor_msgs/FluidPressure.h>
 #include <proc_navigation/navigation_device.h>
-#include <sonia_msgs/BarometerMsg.h>
+#include <proc_navigation/BarometerMsg.h>
 
 
 namespace proc_navigation {
@@ -16,7 +16,7 @@ namespace proc_navigation {
     public:
     DepthMeterData();
 
-    void DepthMeterCallback(const sonia_msgs::BarometerMsg &msg);
+    void DepthMeterCallback(const proc_navigation::BarometerMsg &msg);
 
     double GetDepth(){ return depth_m_;}
 

@@ -19,7 +19,7 @@ DVLData::DVLData() :
 }
 
 
-void DVLData::BottomTrackingCallback(sonia_msgs::BottomTracking msg) {
+void DVLData::BottomTrackingCallback(provider_dvl::BottomTracking msg) {
   // If no NAN, set the values
   if (!VerifyNAN(msg.velocity)) {
     // See p.195, search in page for: BT Velocity

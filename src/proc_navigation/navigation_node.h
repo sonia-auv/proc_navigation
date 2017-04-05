@@ -29,7 +29,7 @@
 #include <ros/ros.h>
 #include <memory>
 #include <geometry_msgs/Pose.h>
-#include <sonia_msgs/PD0Packet.h>
+#include <provider_dvl/PD0Packet.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
 
