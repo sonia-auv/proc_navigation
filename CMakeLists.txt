@@ -47,7 +47,6 @@ find_package(
     roscpp
     std_msgs
     message_generation
-    provider_dvl
     sonia_msgs
     geometry_msgs
     sensor_msgs
@@ -77,7 +76,7 @@ generate_messages(
 catkin_package(
     INCLUDE_DIRS ${proc_navigation_SRC_DIR}
     LIBRARIES
-    CATKIN_DEPENDS roscpp message_runtime std_msgs provider_dvl lib_atlas sonia_msgs
+    CATKIN_DEPENDS roscpp message_runtime std_msgs lib_atlas sonia_msgs
 )
 
 #===============================================================================
@@ -94,7 +93,6 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
     ${proc_navigation_SRC_DIR}
     ${lib_atlas_INCLUDE_DIRS}
-    ${provider_dvl_INCLUDE_DIRS}
 )
 
 #==========================================================================
