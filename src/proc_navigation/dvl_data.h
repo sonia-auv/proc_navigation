@@ -5,7 +5,6 @@
 #ifndef PROC_NAVIGATION_DVLDATA_HPP
 #define PROC_NAVIGATION_DVLDATA_HPP
 
-#include <provider_dvl/BottomTracking.h>
 #include <lib_atlas/maths/matrix.h>
 #include "proc_navigation/navigation_device.h"
 namespace proc_navigation {
@@ -13,7 +12,7 @@ namespace proc_navigation {
 class DVLData: public NavigationDevice {
  public:
   DVLData();
-  void BottomTrackingCallback(provider_dvl::BottomTracking msg);
+//  void BottomTrackingCallback(provider_dvl::BottomTracking msg);
 
   void GetPositionXYZ(Eigen::Vector3d &pos);
  private:

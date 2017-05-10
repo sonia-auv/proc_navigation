@@ -35,8 +35,8 @@ NavNode::NavNode(ros::NodeHandle nh) :
     node_handle_(nh),
     position_offset_(0,0,0)
 {
-  subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/bottom_tracking", 100,
-                                           &DVLData::BottomTrackingCallback, &dvl_data_);
+//  subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/bottom_tracking", 100,
+//                                           &DVLData::BottomTrackingCallback, &dvl_data_);
   subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000,
                                            &IMUData::IMUMsgCallback, &imu_data_);
   subscriber_depth_meter_ = node_handle_.subscribe("/provider_can/barometer_intern_press_msgs", 1000,

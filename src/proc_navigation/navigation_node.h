@@ -29,7 +29,6 @@
 #include <ros/ros.h>
 #include <memory>
 #include <geometry_msgs/Pose.h>
-#include <provider_dvl/PD0Packet.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
 
@@ -74,7 +73,6 @@ class NavNode : public atlas::ServiceServerManager<NavNode> {
   DepthMeterData depth_meter_data_;
 
   Eigen::Vector3d position_offset_;
-
 };
 
 inline void NavNode::FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg)
@@ -86,7 +84,6 @@ inline void NavNode::FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vecto
   twist.angular.x = euler.x();
   twist.angular.y = euler.y();
   twist.angular.z = euler.z();
-
 }
 
 inline void NavNode::FillPoseMsg(const Eigen::Vector3d &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg)

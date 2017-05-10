@@ -47,7 +47,6 @@ find_package(
     roscpp
     std_msgs
     message_generation
-    provider_dvl
     geometry_msgs
     sensor_msgs
     lib_atlas
@@ -57,7 +56,6 @@ add_message_files(
     DIRECTORY msg
     FILES
     BarometerMsg.msg
-
 )
 
 add_service_files(
@@ -76,7 +74,7 @@ generate_messages(
 catkin_package(
     INCLUDE_DIRS ${proc_navigation_SRC_DIR}
     LIBRARIES
-    CATKIN_DEPENDS roscpp message_runtime std_msgs lib_atlas provider_dvl
+    CATKIN_DEPENDS roscpp message_runtime std_msgs lib_atlas
 )
 
 #===============================================================================
