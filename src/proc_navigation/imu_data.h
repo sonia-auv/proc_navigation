@@ -12,9 +12,13 @@ namespace proc_navigation {
 
 class IMUData: public NavigationDevice {
  public:
+
+  static constexpr double RadToDegree = 180.0f/M_PI;
+
   void IMUMsgCallback(sensor_msgs::Imu msg);
   void GetQuaternion(Eigen::Quaterniond &quat);
   void GetOrientation(Eigen::Vector3d &orientation_rpy_degree);
+  double RadianToDegree(const double &radian);
  private:
 
   Eigen::Quaterniond quaternion;
@@ -30,5 +34,10 @@ inline void IMUData::GetQuaternion(Eigen::Quaterniond &quat) {
 inline void IMUData::GetOrientation(Eigen::Vector3d &rpy) {
   rpy = orientation_rpy_degree;
 }
+
+inline double IMUData::RadianToDegree(const double &radian) {
+  return radian * RadToDegree;
+}
+
 }
 #endif //PROC_NAVIGATION_IMUDATA_HPP

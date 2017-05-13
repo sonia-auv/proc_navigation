@@ -5,7 +5,6 @@
 #include <rosconsole/macros_generated.h>
 #include <ros/ros.h>
 #include "proc_navigation/imu_data.h"
-#include "lib_atlas/maths/matrix.h"
 #include <cmath>
 namespace proc_navigation {
 
@@ -35,9 +34,9 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   double roll = std::atan2(m23,m33);
   double yaw = std::atan2(m12, m11) + M_PI;
   yaw = std::fmod((yaw + M_PI), M_PI*2.0);
-  orientation_rpy_degree = Eigen::Vector3d(atlas::RadianToDegree(roll),
-                                           atlas::RadianToDegree(pitch),
-                                           atlas::RadianToDegree(yaw) );
+  orientation_rpy_degree = Eigen::Vector3d(RadianToDegree(roll),
+                                           RadianToDegree(pitch),
+                                           RadianToDegree(yaw) );
 
 
   // acceleration

@@ -29,93 +29,78 @@
 #include <ros/ros.h>
 #include <memory>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <sensor_msgs/FluidPressure.h>
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
-
-#include <lib_atlas/ros/service_server_manager.h>
 
 #include <proc_navigation/SetDepthOffset.h>
 #include <proc_navigation/SetWorldXYOffset.h>
 
 #include "dvl_data.h"
 #include "imu_data.h"
-#include "depth_meter_data.h"
 
 namespace proc_navigation {
 
-class NavNode : public atlas::ServiceServerManager<NavNode> {
+class ProcNavigationNode {
  public:
-  explicit NavNode(ros::NodeHandle nh);
+  //==========================================================================
+  // P U B L I C   C / D T O R S
 
-  ~NavNode();
+  ProcNavigationNode(const ros::NodeHandlePtr &nh);
+  ~ProcNavigationNode();
+
+  //==========================================================================
+  // P U B L I C   M E T H O D S
 
   void Spin();
-
   void PublishData();
 
  private:
-  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
-  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
+  //==========================================================================
+  // P R I V A T E   M E T H O D S
 
-  void FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg);
-  void FillPoseMsg(const Eigen::Vector3d &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg);
+//  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
+//  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
-  ros::NodeHandle node_handle_;
+  void FillTwistMsg(const geometry_msgs::Vector3 &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg);
+  void FillPoseMsg(const geometry_msgs::Vector3 &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg);
 
-  ros::Subscriber subscriber_dvl_;
+  //==========================================================================
+  // P R I V A T E   M E M B E R S
+
+  ros::NodeHandlePtr nh_;
+
+  ros::Subscriber subscriber_dvl_twist_;
+  ros::Subscriber subscriber_dvl_pressure_;
   ros::Subscriber subscriber_imu_;
-  ros::Subscriber subscriber_depth_meter_;
 
   ros::Publisher nav_pose_pub;
 
-  DVLData dvl_data_;
+  DvlData dvl_data_;
   IMUData imu_data_;
-  DepthMeterData depth_meter_data_;
 
-  Eigen::Vector3d position_offset_;
+  geometry_msgs::Vector3 position_offset_;
 };
 
-inline void NavNode::FillTwistMsg(const Eigen::Vector3d &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg)
-{
-  auto &twist = msg.twist.twist;
-  twist.linear.x = pos.x();
-  twist.linear.y = pos.y();
-  twist.linear.z = pos.z();
-  twist.angular.x = euler.x();
-  twist.angular.y = euler.y();
-  twist.angular.z = euler.z();
-}
+//inline bool NavNode::SetDepthOffsetCallback(
+//    SetDepthOffset::Request &rqst,
+//    SetDepthOffset::Response &response)
+//{
+//  position_offset_.z = dvl_data_.GetPositionZFromPressure();
+//  return true;
+//}
 
-inline void NavNode::FillPoseMsg(const Eigen::Vector3d &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg)
-{
-  auto &pose = msg.pose.pose;
-  pose.position.x = pos.x();
-  pose.position.y = pos.y();
-  pose.position.z = pos.z();
-  pose.orientation.x = quat.x();
-  pose.orientation.y = quat.y();
-  pose.orientation.z = quat.z();
-  pose.orientation.w = quat.w();
-}
-
-inline bool NavNode::SetDepthOffsetCallback(
-    SetDepthOffset::Request &rqst,
-    SetDepthOffset::Response &response)
-{
-  position_offset_.z() = depth_meter_data_.GetDepth();
-  return true;
-}
-
-inline bool NavNode::SetWorldXYOffsetCallback(
-    SetWorldXYOffset::Request &rqst,
-    SetWorldXYOffset::Response &response)
-{
-  Eigen::Vector3d tmp;
-  dvl_data_.GetPositionXYZ(tmp);
-  position_offset_.x() = tmp.x();
-  position_offset_.y() = tmp.y();
-  return true;
-}
+//inline bool NavNode::SetWorldXYOffsetCallback(
+//    SetWorldXYOffset::Request &rqst,
+//    SetWorldXYOffset::Response &response)
+//{
+//  geometry_msgs::Vector3 tmp;
+//  tmp = dvl_data_.GetPositionXYZ();
+//  position_offset_.x = tmp.x;
+//  position_offset_.y = tmp.y;
+//  return true;
+//}
 
 }
 #endif  // PROC_NAVIGATION_NAVIGATION_NODE_H_

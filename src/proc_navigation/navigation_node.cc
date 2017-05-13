@@ -23,85 +23,109 @@
  * along with S.O.N.I.A. software. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <std_msgs/String.h>
-#include <geometry_msgs/Pose.h>
 #include "proc_navigation/navigation_node.h"
 
 namespace proc_navigation {
 
+//==============================================================================
+// C / D T O R S   S E C T I O N
+
 //-----------------------------------------------------------------------------
 //
-NavNode::NavNode(ros::NodeHandle nh) :
-    node_handle_(nh),
-    position_offset_(0,0,0)
-{
-//  subscriber_dvl_ = node_handle_.subscribe("/provider_dvl/bottom_tracking", 100,
-//                                           &DVLData::BottomTrackingCallback, &dvl_data_);
-  subscriber_imu_ = node_handle_.subscribe("/provider_imu/imu", 1000,
+ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
+  subscriber_dvl_twist_ = nh_->subscribe("/provider_dvl/dvl_twist", 100,
+                                           &DvlData::DvlTwistCallback, &dvl_data_);
+  subscriber_dvl_pressure_ = nh_->subscribe("/provider_dvl/dvl_pressure", 100,
+                                           &DvlData::DvlPressureCallback, &dvl_data_);
+  subscriber_imu_ = nh_->subscribe("/provider_imu/imu", 1000,
                                            &IMUData::IMUMsgCallback, &imu_data_);
-  subscriber_depth_meter_ = node_handle_.subscribe("/provider_can/barometer_intern_press_msgs", 1000,
-                                                   &DepthMeterData::DepthMeterCallback,
-                                                   &depth_meter_data_);
 
-  RegisterService<SetDepthOffset>("/proc_navigation/set_depth_offset",
-                               &NavNode::SetDepthOffsetCallback, *this);
-  RegisterService<SetWorldXYOffset>("/proc_navigation/set_world_x_y_offset",
-                                  &NavNode::SetWorldXYOffsetCallback, *this);
+//  RegisterService<SetDepthOffset>("/proc_navigation/set_depth_offset",
+//                               &NavNode::SetDepthOffsetCallback, *this);
+//  RegisterService<SetWorldXYOffset>("/proc_navigation/set_world_x_y_offset",
+//                                  &NavNode::SetWorldXYOffsetCallback, *this);
 
-  nav_pose_pub =
-      node_handle_.advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
+  nav_pose_pub = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 }
 
 //-----------------------------------------------------------------------------
 //
-NavNode::~NavNode() {}
+ProcNavigationNode::~ProcNavigationNode() {}
+
+//==============================================================================
+// M E T H O D   S E C T I O N
 
 //-----------------------------------------------------------------------------
 //
-void NavNode::Spin()
+void ProcNavigationNode::Spin()
 {
   ros::Rate r(100); // 100 hz
-  while(ros::ok())
-  {
-    PublishData();
+  while(ros::ok()) {
     ros::spinOnce();
+    PublishData();
     r.sleep();
   }
 }
 
 //-----------------------------------------------------------------------------
 //
-void NavNode::PublishData() {
+void ProcNavigationNode::PublishData() {
   if (dvl_data_.IsNewDataReady() ||
-      imu_data_.IsNewDataReady() ||
-      depth_meter_data_.IsNewDataReady()) {
+      imu_data_.IsNewDataReady()) {
 
     dvl_data_.SetNewDataUsed();
     imu_data_.SetNewDataUsed();
-    depth_meter_data_.SetNewDataUsed();
 
     nav_msgs::Odometry odometry_msg;
     odometry_msg.header.frame_id = "NED";
     odometry_msg.header.stamp = ros::Time::now();
 
     // Fill the position
-    Eigen::Vector3d position, euler_angle;
+    geometry_msgs::Vector3 position;
+    Eigen::Vector3d euler_angle;
     Eigen::Quaterniond quaternion;
-    double depth;
-    dvl_data_.GetPositionXYZ(position);
+    position = dvl_data_.GetPositionXYZ();
     imu_data_.GetQuaternion(quaternion);
     imu_data_.GetOrientation(euler_angle);
-    depth = depth_meter_data_.GetDepth();
 
     // We use the depth from the depth meter.
-    position.z() = depth ;
-    position -= position_offset_;
+//    position.z = depth;
+    position.z -= position_offset_.z;
 
     FillPoseMsg(position, quaternion, odometry_msg);
     FillTwistMsg(position, euler_angle, odometry_msg);
 
     nav_pose_pub.publish(odometry_msg);
   }
+}
+
+//-----------------------------------------------------------------------------
+//
+void ProcNavigationNode::FillTwistMsg(const geometry_msgs::Vector3 &pos,
+                                      const Eigen::Vector3d &euler,
+                                      nav_msgs::Odometry &msg) {
+  auto &twist = msg.twist.twist;
+  twist.linear.x = pos.x;
+  twist.linear.y = pos.y;
+  twist.linear.z = pos.z;
+  twist.angular.x = euler.x();
+  twist.angular.y = euler.y();
+  twist.angular.z = euler.z();
+}
+
+//-----------------------------------------------------------------------------
+//
+void ProcNavigationNode::FillPoseMsg(const geometry_msgs::Vector3 &pos,
+                                     const Eigen::Quaterniond &quat,
+                                     nav_msgs::Odometry &msg) {
+  auto &pose = msg.pose.pose;
+  pose.position.x = pos.x;
+  pose.position.y = pos.y;
+  pose.position.z = pos.z;
+  pose.orientation.x = quat.x();
+  pose.orientation.y = quat.y();
+  pose.orientation.z = quat.z();
+  pose.orientation.w = quat.w();
 }
 
 }  // namespace proc_navigation

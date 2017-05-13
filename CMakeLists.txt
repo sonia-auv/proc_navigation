@@ -49,14 +49,12 @@ find_package(
     message_generation
     geometry_msgs
     sensor_msgs
-    lib_atlas
 )
 
-add_message_files(
-    DIRECTORY msg
-    FILES
-    BarometerMsg.msg
-)
+#add_message_files(
+#    DIRECTORY msg
+#    FILES
+#)
 
 add_service_files(
         DIRECTORY srv
@@ -74,33 +72,31 @@ generate_messages(
 catkin_package(
     INCLUDE_DIRS ${proc_navigation_SRC_DIR}
     LIBRARIES
-    CATKIN_DEPENDS roscpp message_runtime std_msgs lib_atlas
+    CATKIN_DEPENDS roscpp message_runtime std_msgs
 )
 
 #===============================================================================
 # I N C L U D E   F I L E S
 
 file(GLOB_RECURSE proc_navigation_FILES
-    "${proc_navigation_SRC_DIR}/*.cc"
-    "${proc_navigation_SRC_DIR}/*.h")
+        "${proc_navigation_SRC_DIR}/*.cc"
+        "${proc_navigation_SRC_DIR}/*.h")
 
 list(REMOVE_ITEM proc_navigation_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc)
+        ${CMAKE_CURRENT_SOURCE_DIR}/${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc)
 
+# Include all the directories where source can be found.
 include_directories(
-    ${catkin_INCLUDE_DIRS}
-    ${proc_navigation_SRC_DIR}
-    ${lib_atlas_INCLUDE_DIRS}
-)
+        ${catkin_INCLUDE_DIRS}
+        ${proc_navigation_SRC_DIR})
+
 
 #==========================================================================
 # C R E A T E   E X E C U T A B L E
 
 add_executable(${PROJECT_NAME}_node ${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc ${proc_navigation_FILES})
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${lib_atlas_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_node
-        sonia_msgs_generate_messages_cpp
-        ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_generate_messages_cpp)
 
 #==========================================================================
 # U N I T   T E S T S
