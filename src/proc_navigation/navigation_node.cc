@@ -104,13 +104,13 @@ void ProcNavigationNode::PublishData() {
 void ProcNavigationNode::FillTwistMsg(const geometry_msgs::Vector3 &pos,
                                       const Eigen::Vector3d &euler,
                                       nav_msgs::Odometry &msg) {
-  auto &twist = msg.twist.twist;
-  twist.linear.x = pos.x;
-  twist.linear.y = pos.y;
-  twist.linear.z = pos.z;
-  twist.angular.x = euler.x();
-  twist.angular.y = euler.y();
-  twist.angular.z = euler.z();
+
+  msg.twist.twist.linear.x = pos.x;
+  msg.twist.twist.linear.y = pos.y;
+  msg.twist.twist.linear.z = pos.z;
+  msg.twist.twist.angular.x = euler.x();
+  msg.twist.twist.angular.y = euler.y();
+  msg.twist.twist.angular.z = euler.z();
 }
 
 //-----------------------------------------------------------------------------
@@ -118,14 +118,13 @@ void ProcNavigationNode::FillTwistMsg(const geometry_msgs::Vector3 &pos,
 void ProcNavigationNode::FillPoseMsg(const geometry_msgs::Vector3 &pos,
                                      const Eigen::Quaterniond &quat,
                                      nav_msgs::Odometry &msg) {
-  auto &pose = msg.pose.pose;
-  pose.position.x = pos.x;
-  pose.position.y = pos.y;
-  pose.position.z = pos.z;
-  pose.orientation.x = quat.x();
-  pose.orientation.y = quat.y();
-  pose.orientation.z = quat.z();
-  pose.orientation.w = quat.w();
+  msg.pose.pose.position.x = pos.x;
+  msg.pose.pose.position.y = pos.y;
+  msg.pose.pose.position.z = pos.z;
+  msg.pose.pose.orientation.x = quat.x();
+  msg.pose.pose.orientation.y = quat.y();
+  msg.pose.pose.orientation.z = quat.z();
+  msg.pose.pose.orientation.w = quat.w();
 }
 
 }  // namespace proc_navigation
