@@ -26,7 +26,7 @@ class DvlData: public NavigationDevice {
   sensor_msgs::FluidPressure GetPressure();
 
  private:
-  ros::Time last_timestamp;
+  ros::Time last_timestamp_;
   geometry_msgs::TwistStamped dvl_twist_;
   sensor_msgs::FluidPressure dvl_pressure_;
 };

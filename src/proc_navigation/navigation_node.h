@@ -63,8 +63,8 @@ class ProcNavigationNode {
 //  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
 //  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
-  void FillTwistMsg(const geometry_msgs::Vector3 &pos, const Eigen::Vector3d &euler, nav_msgs::Odometry &msg);
-  void FillPoseMsg(const geometry_msgs::Vector3 &pos, const Eigen::Quaterniond &quat, nav_msgs::Odometry &msg);
+  void FillTwistMsg(const geometry_msgs::Vector3 &pos, const geometry_msgs::Vector3 &euler, nav_msgs::Odometry &msg);
+  void FillPoseMsg(const geometry_msgs::Vector3 &pos, const geometry_msgs::Quaternion &quat, nav_msgs::Odometry &msg);
 
   //==========================================================================
   // P R I V A T E   M E M B E R S
@@ -81,6 +81,7 @@ class ProcNavigationNode {
   IMUData imu_data_;
 
   geometry_msgs::Vector3 position_offset_;
+  geometry_msgs::Vector3 position_;
 };
 
 //inline bool NavNode::SetDepthOffsetCallback(

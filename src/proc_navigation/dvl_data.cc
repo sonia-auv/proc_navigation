@@ -13,7 +13,7 @@ namespace proc_navigation {
 //------------------------------------------------------------------------------
 //
 DvlData::DvlData() {
-  last_timestamp = ros::Time::now();
+  last_timestamp_ = ros::Time::now();
 }
 
 //------------------------------------------------------------------------------
@@ -41,14 +41,14 @@ void DvlData::DvlPressureCallback(sensor_msgs::FluidPressure msg) {
 //
 geometry_msgs::Vector3 DvlData::GetPositionXYZ() {
   geometry_msgs::Vector3 position;
-  ros::Duration dt;
-  dt = dvl_twist_.header.stamp - last_timestamp;
+  ros::Duration dt = ros::Time::now() - last_timestamp_;
+  double dt_sec = dt.toSec();
 
-  position.x = dvl_twist_.twist.linear.x * dt.sec;
-  position.y = dvl_twist_.twist.linear.y * dt.sec;
-  position.z = dvl_twist_.twist.linear.z * dt.sec;
+  position.x = dvl_twist_.twist.linear.x * dt_sec;
+  position.y = dvl_twist_.twist.linear.y * dt_sec;
+  position.z = dvl_twist_.twist.linear.z * dt_sec;
 
-  last_timestamp = dvl_twist_.header.stamp;
+  last_timestamp_ = ros::Time::now();
 
   return position;
 }

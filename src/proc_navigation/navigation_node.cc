@@ -45,6 +45,10 @@ ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
 //  RegisterService<SetWorldXYOffset>("/proc_navigation/set_world_x_y_offset",
 //                                  &NavNode::SetWorldXYOffsetCallback, *this);
 
+  position_.x = 0.0;
+  position_.y = 0.0;
+  position_.z = 0.0;
+
   nav_pose_pub = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 }
 
@@ -82,18 +86,22 @@ void ProcNavigationNode::PublishData() {
 
     // Fill the position
     geometry_msgs::Vector3 position;
-    Eigen::Vector3d euler_angle;
-    Eigen::Quaterniond quaternion;
+    geometry_msgs::Vector3 euler_angle;
+    geometry_msgs::Quaternion quaternion;
     position = dvl_data_.GetPositionXYZ();
-    imu_data_.GetQuaternion(quaternion);
+    quaternion = imu_data_.GetQuaternion();
     imu_data_.GetOrientation(euler_angle);
 
     // We use the depth from the depth meter.
 //    position.z = depth;
-    position.z -= position_offset_.z;
+    position_.x += position.x;
+    position_.y += position.y;
+    position_.z += position.z;
 
-    FillPoseMsg(position, quaternion, odometry_msg);
-    FillTwistMsg(position, euler_angle, odometry_msg);
+    position_.z -= position_offset_.z;
+
+    FillPoseMsg(position_, quaternion, odometry_msg);
+    FillTwistMsg(position_, euler_angle, odometry_msg);
 
     nav_pose_pub.publish(odometry_msg);
   }
@@ -102,29 +110,29 @@ void ProcNavigationNode::PublishData() {
 //-----------------------------------------------------------------------------
 //
 void ProcNavigationNode::FillTwistMsg(const geometry_msgs::Vector3 &pos,
-                                      const Eigen::Vector3d &euler,
+                                      const geometry_msgs::Vector3 &euler,
                                       nav_msgs::Odometry &msg) {
 
   msg.twist.twist.linear.x = pos.x;
   msg.twist.twist.linear.y = pos.y;
   msg.twist.twist.linear.z = pos.z;
-  msg.twist.twist.angular.x = euler.x();
-  msg.twist.twist.angular.y = euler.y();
-  msg.twist.twist.angular.z = euler.z();
+  msg.twist.twist.angular.x = euler.x;
+  msg.twist.twist.angular.y = euler.y;
+  msg.twist.twist.angular.z = euler.z;
 }
 
 //-----------------------------------------------------------------------------
 //
 void ProcNavigationNode::FillPoseMsg(const geometry_msgs::Vector3 &pos,
-                                     const Eigen::Quaterniond &quat,
+                                     const geometry_msgs::Quaternion &quat,
                                      nav_msgs::Odometry &msg) {
   msg.pose.pose.position.x = pos.x;
   msg.pose.pose.position.y = pos.y;
   msg.pose.pose.position.z = pos.z;
-  msg.pose.pose.orientation.x = quat.x();
-  msg.pose.pose.orientation.y = quat.y();
-  msg.pose.pose.orientation.z = quat.z();
-  msg.pose.pose.orientation.w = quat.w();
+  msg.pose.pose.orientation.x = quat.x;
+  msg.pose.pose.orientation.y = quat.y;
+  msg.pose.pose.orientation.z = quat.z;
+  msg.pose.pose.orientation.w = quat.w;
 }
 
 }  // namespace proc_navigation
