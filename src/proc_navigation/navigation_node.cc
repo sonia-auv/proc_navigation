@@ -84,24 +84,20 @@ void ProcNavigationNode::PublishData() {
     odometry_msg.header.frame_id = "NED";
     odometry_msg.header.stamp = ros::Time::now();
 
-    // Fill the position
-    geometry_msgs::Vector3 position;
-    geometry_msgs::Vector3 velocity;
-    geometry_msgs::Vector3 euler_angle;
-    geometry_msgs::Vector3 angular_velocity;
-    geometry_msgs::Quaternion quaternion;
-    position = dvl_data_.GetPositionXYZ();
-    velocity = dvl_data_.GetVelocityXYZ();
-    angular_velocity = imu_data_.GetAngularVelocity();
-    euler_angle = imu_data_.GetOrientation();
+    geometry_msgs::Vector3 position = dvl_data_.GetPositionXYZ();
+    double position_from_depth = dvl_data_.GetPositionZFromPressure();
+    geometry_msgs::Vector3 velocity = dvl_data_.GetVelocityXYZ();
+    geometry_msgs::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
+    geometry_msgs::Vector3 euler_angle = imu_data_.GetOrientation();
 
-    // We use the depth from the depth meter.
-//    position.z = depth;
+
     position_.x += position.x;
     position_.y += position.y;
     position_.z += position.z;
 
-    position_.z -= position_offset_.z;
+    if (fabs(position_from_depth - position_.z) > 0.1) {
+      position_.z = (position_from_depth + position_.z)/2;
+    }
 
     FillPoseMsg(position_, euler_angle, odometry_msg);
     FillTwistMsg(velocity, angular_velocity, odometry_msg);
@@ -126,14 +122,14 @@ void ProcNavigationNode::FillTwistMsg(const geometry_msgs::Vector3 &vel,
 //-----------------------------------------------------------------------------
 //
 void ProcNavigationNode::FillPoseMsg(const geometry_msgs::Vector3 &pos,
-                                     const geometry_msgs::Vector3 &angular_velocity,
+                                     const geometry_msgs::Vector3 &angle,
                                      nav_msgs::Odometry &msg) {
   msg.pose.pose.position.x = pos.x;
   msg.pose.pose.position.y = pos.y;
   msg.pose.pose.position.z = pos.z;
-  msg.pose.pose.orientation.x = angular_velocity.x;
-  msg.pose.pose.orientation.y = angular_velocity.y;
-  msg.pose.pose.orientation.z = angular_velocity.z;
+  msg.pose.pose.orientation.x = angle.x;
+  msg.pose.pose.orientation.y = angle.y;
+  msg.pose.pose.orientation.z = angle.z;
 }
 
 }  // namespace proc_navigation
