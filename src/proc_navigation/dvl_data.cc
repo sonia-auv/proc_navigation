@@ -55,6 +55,12 @@ geometry_msgs::Vector3 DvlData::GetPositionXYZ() {
 
 //------------------------------------------------------------------------------
 //
+geometry_msgs::Vector3 DvlData::GetVelocityXYZ() {
+  return dvl_twist_.twist.linear;
+}
+
+//------------------------------------------------------------------------------
+//
 sensor_msgs::FluidPressure DvlData::GetPressure() {
   return dvl_pressure_;
 }

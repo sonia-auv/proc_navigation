@@ -22,6 +22,7 @@ class DvlData: public NavigationDevice {
   void DvlPressureCallback(sensor_msgs::FluidPressure msg);
 
   geometry_msgs::Vector3 GetPositionXYZ();
+  geometry_msgs::Vector3 GetVelocityXYZ();
   double GetPositionZFromPressure();
   sensor_msgs::FluidPressure GetPressure();
 

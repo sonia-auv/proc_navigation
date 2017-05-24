@@ -18,18 +18,15 @@ class IMUData: public NavigationDevice {
 
   void IMUMsgCallback(sensor_msgs::Imu msg);
   geometry_msgs::Quaternion GetQuaternion();
-  void GetOrientation(geometry_msgs::Vector3 &orientation_rpy_degree);
+  geometry_msgs::Vector3 GetOrientation();
+  geometry_msgs::Vector3 GetAngularVelocity();
   double RadianToDegree(const double &radian);
  private:
 
   geometry_msgs::Quaternion quaternion_;
 
-  geometry_msgs::Vector3 orientation_rpy_degree, linear_acceleration, angular_velocity;
+  geometry_msgs::Vector3 orientation_rpy_degree_, linear_acceleration, angular_velocity_;
 };
-
-inline void IMUData::GetOrientation(geometry_msgs::Vector3 &rpy) {
-  rpy = orientation_rpy_degree;
-}
 
 inline double IMUData::RadianToDegree(const double &radian) {
   return radian * RadToDegree;

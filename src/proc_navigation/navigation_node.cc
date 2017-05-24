@@ -54,7 +54,7 @@ ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
 
 //-----------------------------------------------------------------------------
 //
-ProcNavigationNode::~ProcNavigationNode() {}
+ProcNavigationNode::~ProcNavigationNode() { }
 
 //==============================================================================
 // M E T H O D   S E C T I O N
@@ -86,11 +86,14 @@ void ProcNavigationNode::PublishData() {
 
     // Fill the position
     geometry_msgs::Vector3 position;
+    geometry_msgs::Vector3 velocity;
     geometry_msgs::Vector3 euler_angle;
+    geometry_msgs::Vector3 angular_velocity;
     geometry_msgs::Quaternion quaternion;
     position = dvl_data_.GetPositionXYZ();
-    quaternion = imu_data_.GetQuaternion();
-    imu_data_.GetOrientation(euler_angle);
+    velocity = dvl_data_.GetVelocityXYZ();
+    angular_velocity = imu_data_.GetAngularVelocity();
+    euler_angle = imu_data_.GetOrientation();
 
     // We use the depth from the depth meter.
 //    position.z = depth;
@@ -100,8 +103,8 @@ void ProcNavigationNode::PublishData() {
 
     position_.z -= position_offset_.z;
 
-    FillPoseMsg(position_, quaternion, odometry_msg);
-    FillTwistMsg(position_, euler_angle, odometry_msg);
+    FillPoseMsg(position_, euler_angle, odometry_msg);
+    FillTwistMsg(velocity, angular_velocity, odometry_msg);
 
     nav_pose_pub.publish(odometry_msg);
   }
@@ -109,30 +112,28 @@ void ProcNavigationNode::PublishData() {
 
 //-----------------------------------------------------------------------------
 //
-void ProcNavigationNode::FillTwistMsg(const geometry_msgs::Vector3 &pos,
-                                      const geometry_msgs::Vector3 &euler,
+void ProcNavigationNode::FillTwistMsg(const geometry_msgs::Vector3 &vel,
+                                      const geometry_msgs::Vector3 &angular_velocity,
                                       nav_msgs::Odometry &msg) {
-
-  msg.twist.twist.linear.x = pos.x;
-  msg.twist.twist.linear.y = pos.y;
-  msg.twist.twist.linear.z = pos.z;
-  msg.twist.twist.angular.x = euler.x;
-  msg.twist.twist.angular.y = euler.y;
-  msg.twist.twist.angular.z = euler.z;
+  msg.twist.twist.linear.x = vel.x;
+  msg.twist.twist.linear.y = vel.y;
+  msg.twist.twist.linear.z = vel.z;
+  msg.twist.twist.angular.x = angular_velocity.x;
+  msg.twist.twist.angular.y = angular_velocity.y;
+  msg.twist.twist.angular.z = angular_velocity.z;
 }
 
 //-----------------------------------------------------------------------------
 //
 void ProcNavigationNode::FillPoseMsg(const geometry_msgs::Vector3 &pos,
-                                     const geometry_msgs::Quaternion &quat,
+                                     const geometry_msgs::Vector3 &angular_velocity,
                                      nav_msgs::Odometry &msg) {
   msg.pose.pose.position.x = pos.x;
   msg.pose.pose.position.y = pos.y;
   msg.pose.pose.position.z = pos.z;
-  msg.pose.pose.orientation.x = quat.x;
-  msg.pose.pose.orientation.y = quat.y;
-  msg.pose.pose.orientation.z = quat.z;
-  msg.pose.pose.orientation.w = quat.w;
+  msg.pose.pose.orientation.x = angular_velocity.x;
+  msg.pose.pose.orientation.y = angular_velocity.y;
+  msg.pose.pose.orientation.z = angular_velocity.z;
 }
 
 }  // namespace proc_navigation
