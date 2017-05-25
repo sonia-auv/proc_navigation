@@ -49,7 +49,9 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   double pitch = std::asin(-m13);
   double roll = std::atan2(m23,m33);
   double yaw = std::atan2(m12, m11) + M_PI;
+
   yaw = std::fmod((yaw + M_PI), M_PI*2.0);
+
   euler_angle_.x = RadianToDegree(roll);
   euler_angle_.y = RadianToDegree(pitch);
   euler_angle_.z = RadianToDegree(yaw);

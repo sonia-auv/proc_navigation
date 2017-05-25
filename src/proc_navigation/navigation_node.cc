@@ -66,9 +66,6 @@ void ProcNavigationNode::Spin()
   ros::Rate r(100); // 100 hz
   while(ros::ok()) {
     ros::spinOnce();
-    std::cout << position_offset_.x << std::endl;
-    std::cout << position_offset_.y << std::endl;
-    std::cout << position_offset_.z << std::endl;
     PublishData();
     r.sleep();
   }
@@ -109,7 +106,6 @@ void ProcNavigationNode::PublishData() {
     geometry_msgs::Vector3 velocity = dvl_data_.GetVelocityXYZ();
     geometry_msgs::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
     geometry_msgs::Vector3 euler_angle = imu_data_.GetOrientation();
-
 
     position_.x += position.x;
     position_.y += position.y;
