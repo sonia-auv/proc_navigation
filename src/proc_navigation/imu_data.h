@@ -49,5 +49,6 @@ inline double IMUData::RadianToDegree(const double &radian) {
   return radian * RadToDegree;
 }
 
-}
+} // namespace proc_navigation
+
 #endif //PROC_NAVIGATION_IMUDATA_HPP

@@ -23,7 +23,7 @@
  * along with S.O.N.I.A. software. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "proc_navigation/navigation_node.h"
+#include "proc_navigation/proc_navigation_node.h"
 
 namespace proc_navigation {
 
