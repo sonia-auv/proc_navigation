@@ -60,8 +60,8 @@ class ProcNavigationNode {
   //==========================================================================
   // P R I V A T E   M E T H O D S
 
-//  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
-//  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
+  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
+  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
   void FillPoseMsg(geometry_msgs::Vector3 position, geometry_msgs::Vector3 angle, nav_msgs::Odometry &msg);
   void FillTwistMsg(geometry_msgs::Vector3 linear_velocity, geometry_msgs::Vector3 angular_velocity, nav_msgs::Odometry &msg);
@@ -77,31 +77,15 @@ class ProcNavigationNode {
 
   ros::Publisher navigation_odom_publisher_;
 
+  ros::ServiceServer navigation_depth_offset_server_;
+  ros::ServiceServer navigation_xy_offset_server_;
+
   DvlData dvl_data_;
   IMUData imu_data_;
 
   geometry_msgs::Vector3 position_offset_;
   geometry_msgs::Vector3 position_;
 };
-
-//inline bool NavNode::SetDepthOffsetCallback(
-//    SetDepthOffset::Request &rqst,
-//    SetDepthOffset::Response &response)
-//{
-//  position_offset_.z = dvl_data_.GetPositionZFromPressure();
-//  return true;
-//}
-
-//inline bool NavNode::SetWorldXYOffsetCallback(
-//    SetWorldXYOffset::Request &rqst,
-//    SetWorldXYOffset::Response &response)
-//{
-//  geometry_msgs::Vector3 tmp;
-//  tmp = dvl_data_.GetPositionXYZ();
-//  position_offset_.x = tmp.x;
-//  position_offset_.y = tmp.y;
-//  return true;
-//}
 
 }
 #endif  // PROC_NAVIGATION_NAVIGATION_NODE_H_

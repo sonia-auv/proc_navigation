@@ -40,10 +40,10 @@ ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
   imu_subscriber_ = nh_->subscribe("/provider_imu/imu", 100,
                                            &IMUData::IMUMsgCallback, &imu_data_);
 
-//  RegisterService<SetDepthOffset>("/proc_navigation/set_depth_offset",
-//                               &NavNode::SetDepthOffsetCallback, *this);
-//  RegisterService<SetWorldXYOffset>("/proc_navigation/set_world_x_y_offset",
-//                                  &NavNode::SetWorldXYOffsetCallback, *this);
+  navigation_depth_offset_server_ = nh_->advertiseService("/proc_navigation/set_depth_offset",
+                               &ProcNavigationNode::SetDepthOffsetCallback, this);
+  navigation_xy_offset_server_ = nh_->advertiseService("/proc_navigation/set_world_x_y_offset",
+                                  &ProcNavigationNode::SetWorldXYOffsetCallback, this);
 
   position_.x = 0.0;
   position_.y = 0.0;
@@ -66,9 +66,29 @@ void ProcNavigationNode::Spin()
   ros::Rate r(100); // 100 hz
   while(ros::ok()) {
     ros::spinOnce();
+    std::cout << position_offset_.x << std::endl;
+    std::cout << position_offset_.y << std::endl;
+    std::cout << position_offset_.z << std::endl;
     PublishData();
     r.sleep();
   }
+}
+
+bool ProcNavigationNode::SetDepthOffsetCallback(
+    SetDepthOffset::Request &rqst,
+    SetDepthOffset::Response &response)
+{
+  position_offset_.z = dvl_data_.GetPositionZFromPressure();
+  return true;
+}
+
+bool ProcNavigationNode::SetWorldXYOffsetCallback(
+    SetWorldXYOffset::Request &rqst,
+    SetWorldXYOffset::Response &response)
+{
+  position_offset_.x = position_.x;
+  position_offset_.y = position_.y;
+  return true;
 }
 
 //-----------------------------------------------------------------------------
