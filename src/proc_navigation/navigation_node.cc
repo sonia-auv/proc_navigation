@@ -33,11 +33,11 @@ namespace proc_navigation {
 //-----------------------------------------------------------------------------
 //
 ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
-  subscriber_dvl_twist_ = nh_->subscribe("/provider_dvl/dvl_twist", 100,
+  dvl_twist_subscriber_ = nh_->subscribe("/provider_dvl/dvl_twist", 100,
                                            &DvlData::DvlTwistCallback, &dvl_data_);
-  subscriber_dvl_pressure_ = nh_->subscribe("/provider_dvl/dvl_pressure", 100,
+  dvl_pressure_subscriber_ = nh_->subscribe("/provider_dvl/dvl_pressure", 100,
                                            &DvlData::DvlPressureCallback, &dvl_data_);
-  subscriber_imu_ = nh_->subscribe("/provider_imu/imu", 1000,
+  imu_subscriber_ = nh_->subscribe("/provider_imu/imu", 100,
                                            &IMUData::IMUMsgCallback, &imu_data_);
 
 //  RegisterService<SetDepthOffset>("/proc_navigation/set_depth_offset",
@@ -49,7 +49,7 @@ ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
   position_.y = 0.0;
   position_.z = 0.0;
 
-  nav_pose_pub = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
+  navigation_odom_publisher_ = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 }
 
 //-----------------------------------------------------------------------------
@@ -102,34 +102,34 @@ void ProcNavigationNode::PublishData() {
     FillPoseMsg(position_, euler_angle, odometry_msg);
     FillTwistMsg(velocity, angular_velocity, odometry_msg);
 
-    nav_pose_pub.publish(odometry_msg);
+    navigation_odom_publisher_.publish(odometry_msg);
   }
 }
 
 //-----------------------------------------------------------------------------
 //
-void ProcNavigationNode::FillTwistMsg(const geometry_msgs::Vector3 &vel,
-                                      const geometry_msgs::Vector3 &angular_velocity,
-                                      nav_msgs::Odometry &msg) {
-  msg.twist.twist.linear.x = vel.x;
-  msg.twist.twist.linear.y = vel.y;
-  msg.twist.twist.linear.z = vel.z;
-  msg.twist.twist.angular.x = angular_velocity.x;
-  msg.twist.twist.angular.y = angular_velocity.y;
-  msg.twist.twist.angular.z = angular_velocity.z;
+void ProcNavigationNode::FillPoseMsg(geometry_msgs::Vector3 position,
+                                     geometry_msgs::Vector3 angle,
+                                     nav_msgs::Odometry &msg) {
+  msg.pose.pose.position.x = position.x;
+  msg.pose.pose.position.y = position.y;
+  msg.pose.pose.position.z = position.z;
+  msg.pose.pose.orientation.x = angle.x;
+  msg.pose.pose.orientation.y = angle.y;
+  msg.pose.pose.orientation.z = angle.z;
 }
 
 //-----------------------------------------------------------------------------
 //
-void ProcNavigationNode::FillPoseMsg(const geometry_msgs::Vector3 &pos,
-                                     const geometry_msgs::Vector3 &angle,
-                                     nav_msgs::Odometry &msg) {
-  msg.pose.pose.position.x = pos.x;
-  msg.pose.pose.position.y = pos.y;
-  msg.pose.pose.position.z = pos.z;
-  msg.pose.pose.orientation.x = angle.x;
-  msg.pose.pose.orientation.y = angle.y;
-  msg.pose.pose.orientation.z = angle.z;
+void ProcNavigationNode::FillTwistMsg(geometry_msgs::Vector3 linear_velocity,
+                                      geometry_msgs::Vector3 angular_velocity,
+                                      nav_msgs::Odometry &msg) {
+  msg.twist.twist.linear.x = linear_velocity.x;
+  msg.twist.twist.linear.y = linear_velocity.y;
+  msg.twist.twist.linear.z = linear_velocity.z;
+  msg.twist.twist.angular.x = angular_velocity.x;
+  msg.twist.twist.angular.y = angular_velocity.y;
+  msg.twist.twist.angular.z = angular_velocity.z;
 }
 
 }  // namespace proc_navigation

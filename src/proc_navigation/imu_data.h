@@ -13,19 +13,36 @@ namespace proc_navigation {
 
 class IMUData: public NavigationDevice {
  public:
+  //==========================================================================
+  // C O N S T  ,  T Y P E D E F   A N D   E N U M
 
   static constexpr double RadToDegree = 180.0f/M_PI;
+
+  //==========================================================================
+  // P U B L I C   C / D T O R S
+
+  IMUData();
+  ~IMUData();
+
+  //==========================================================================
+  // P U B L I C   M E T H O D S
 
   void IMUMsgCallback(sensor_msgs::Imu msg);
   geometry_msgs::Quaternion GetQuaternion();
   geometry_msgs::Vector3 GetOrientation();
   geometry_msgs::Vector3 GetAngularVelocity();
-  double RadianToDegree(const double &radian);
+
  private:
+  //==========================================================================
+  // P R I V A T E   M E T H O D S
+
+  double RadianToDegree(const double &radian);
+
+  //==========================================================================
+  // P R I V A T E   M E M B E R S
 
   geometry_msgs::Quaternion quaternion_;
-
-  geometry_msgs::Vector3 orientation_rpy_degree_, linear_acceleration, angular_velocity_;
+  geometry_msgs::Vector3 euler_angle_, angular_velocity_;
 };
 
 inline double IMUData::RadianToDegree(const double &radian) {

@@ -13,10 +13,19 @@ namespace proc_navigation {
 
 class DvlData: public NavigationDevice {
  public:
+  //==========================================================================
+  // C O N S T  ,  T Y P E D E F   A N D   E N U M
+
+  static constexpr double barToMeterOfWater = 10.1972;
+
+  //==========================================================================
+  // P U B L I C   C / D T O R S
+
   DvlData();
   ~DvlData();
 
-  static constexpr double barToMeterOfWater = 10.1972;
+  //==========================================================================
+  // P U B L I C   M E T H O D S
 
   void DvlTwistCallback(geometry_msgs::TwistStamped msg);
   void DvlPressureCallback(sensor_msgs::FluidPressure msg);
@@ -27,6 +36,9 @@ class DvlData: public NavigationDevice {
   sensor_msgs::FluidPressure GetPressure();
 
  private:
+  //==========================================================================
+  // P R I V A T E   M E M B E R S
+
   ros::Time last_timestamp_;
   geometry_msgs::TwistStamped dvl_twist_;
   sensor_msgs::FluidPressure dvl_pressure_;

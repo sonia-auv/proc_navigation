@@ -63,19 +63,19 @@ class ProcNavigationNode {
 //  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
 //  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
-  void FillTwistMsg(const geometry_msgs::Vector3 &vel, const geometry_msgs::Vector3 &euler, nav_msgs::Odometry &msg);
-  void FillPoseMsg(const geometry_msgs::Vector3 &pos, const geometry_msgs::Vector3 &angular_velocity, nav_msgs::Odometry &msg);
+  void FillPoseMsg(geometry_msgs::Vector3 position, geometry_msgs::Vector3 angle, nav_msgs::Odometry &msg);
+  void FillTwistMsg(geometry_msgs::Vector3 linear_velocity, geometry_msgs::Vector3 angular_velocity, nav_msgs::Odometry &msg);
 
   //==========================================================================
   // P R I V A T E   M E M B E R S
 
   ros::NodeHandlePtr nh_;
 
-  ros::Subscriber subscriber_dvl_twist_;
-  ros::Subscriber subscriber_dvl_pressure_;
-  ros::Subscriber subscriber_imu_;
+  ros::Subscriber dvl_twist_subscriber_;
+  ros::Subscriber dvl_pressure_subscriber_;
+  ros::Subscriber imu_subscriber_;
 
-  ros::Publisher nav_pose_pub;
+  ros::Publisher navigation_odom_publisher_;
 
   DvlData dvl_data_;
   IMUData imu_data_;

@@ -8,6 +8,20 @@
 
 namespace proc_navigation {
 
+//==============================================================================
+// C / D T O R S   S E C T I O N
+
+//------------------------------------------------------------------------------
+//
+IMUData::IMUData() { }
+
+//------------------------------------------------------------------------------
+//
+IMUData::~IMUData() { }
+
+//==============================================================================
+// M E T H O D   S E C T I O N
+
 //-----------------------------------------------------------------------------
 //
 void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
@@ -36,16 +50,10 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   double roll = std::atan2(m23,m33);
   double yaw = std::atan2(m12, m11) + M_PI;
   yaw = std::fmod((yaw + M_PI), M_PI*2.0);
-  orientation_rpy_degree_.x = RadianToDegree(roll);
-  orientation_rpy_degree_.y = RadianToDegree(pitch);
-  orientation_rpy_degree_.z = RadianToDegree(yaw);
+  euler_angle_.x = RadianToDegree(roll);
+  euler_angle_.y = RadianToDegree(pitch);
+  euler_angle_.z = RadianToDegree(yaw);
 
-
-  // acceleration
-  linear_acceleration = msg.linear_acceleration;
-
-  // We want our data to be [roll, pitch, yaw] but atlas returns it 
-  // in yaw pitch roll, so we inverse z and x
   angular_velocity_ = msg.angular_velocity;
 
   SetNewDataReady();
@@ -57,8 +65,10 @@ geometry_msgs::Quaternion IMUData::GetQuaternion() {
   return quaternion_;
 }
 
+//-----------------------------------------------------------------------------
+//
 geometry_msgs::Vector3 IMUData::GetOrientation() {
-  return orientation_rpy_degree_;
+  return euler_angle_;
 }
 
 //-----------------------------------------------------------------------------
