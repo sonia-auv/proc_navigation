@@ -75,7 +75,10 @@ bool ProcNavigationNode::SetDepthOffsetCallback(
     SetDepthOffset::Request &rqst,
     SetDepthOffset::Response &response)
 {
-  position_offset_.z = dvl_data_.GetPositionZFromPressure();
+  position_.z = 0.0f;
+
+  imu_data_.SetNewDataReady();
+
   return true;
 }
 
@@ -83,8 +86,11 @@ bool ProcNavigationNode::SetWorldXYOffsetCallback(
     SetWorldXYOffset::Request &rqst,
     SetWorldXYOffset::Response &response)
 {
-  position_offset_.x = position_.x;
-  position_offset_.y = position_.y;
+  position_.x = 0.0f;
+  position_.y = 0.0f;
+
+  imu_data_.SetNewDataReady();
+
   return true;
 }
 
