@@ -56,6 +56,8 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   euler_angle_.y = RadianToDegree(pitch);
   euler_angle_.z = RadianToDegree(yaw);
 
+  linear_acceleration_ = msg.linear_acceleration;
+
   angular_velocity_ = msg.angular_velocity;
 
   SetNewDataReady();

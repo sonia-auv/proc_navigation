@@ -68,7 +68,7 @@ sensor_msgs::FluidPressure DvlData::GetPressure() {
 //------------------------------------------------------------------------------
 //
 double DvlData::GetPositionZFromPressure() {
-  return dvl_pressure_.fluid_pressure * barToMeterOfWater;
+  return dvl_pressure_.fluid_pressure * dBarToMeterOfWater;
 }
 
 }

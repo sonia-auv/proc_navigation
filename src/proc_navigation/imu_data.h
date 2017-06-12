@@ -42,7 +42,7 @@ class IMUData: public NavigationDevice {
   // P R I V A T E   M E M B E R S
 
   geometry_msgs::Quaternion quaternion_;
-  geometry_msgs::Vector3 euler_angle_, angular_velocity_;
+  geometry_msgs::Vector3 euler_angle_, angular_velocity_, linear_acceleration_;
 };
 
 inline double IMUData::RadianToDegree(const double &radian) {
