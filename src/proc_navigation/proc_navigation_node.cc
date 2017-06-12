@@ -114,12 +114,19 @@ void ProcNavigationNode::PublishData() {
     geometry_msgs::Vector3 euler_angle = imu_data_.GetOrientation();
     Eigen::Quaterniond quaternion = imu_data_.GetQuaternion();
 
-    Eigen::Affine3d transform;
-    Eigen::Vector3d pose3(position.x, position.y, position.z);
+    Eigen::Matrix3d original_rotation = EulerToRot(Eigen::Vector3d(DegreeToRadian(euler_angle.z), 0, 0));
+    Eigen::Vector3d translation(position.x, position.y, position.z);
 
-    transform = Eigen::Translation<double, 3>(pose3) * quaternion;
+    position_ += (original_rotation * translation);
 
-    position_ = transform * pose3;
+//    Eigen::Affine3d transform;
+//    Eigen::Vector3d pose3(position.x, position.y, position.z);
+//
+//    transform = Eigen::Translation<double, 3>(pose3) * quaternion;
+
+//    transform = quaternion;
+
+//    position_ += transform * pose3;
 
     position_.z() = position_from_depth;
 
@@ -162,6 +169,15 @@ void ProcNavigationNode::FillTwistMsg(geometry_msgs::Vector3 linear_velocity,
   msg.twist.twist.angular.x = angular_velocity.x;
   msg.twist.twist.angular.y = angular_velocity.y;
   msg.twist.twist.angular.z = angular_velocity.z;
+}
+
+
+Eigen::Matrix3d ProcNavigationNode::EulerToRot(const Eigen::Vector3d &vec) {
+  Eigen::Matrix3d m;
+  m = Eigen::AngleAxisd(vec.x(), Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(vec.y(), Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(vec.z(), Eigen::Vector3d::UnitX());
+  return m;
 }
 
 }  // namespace proc_navigation

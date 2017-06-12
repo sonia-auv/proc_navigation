@@ -46,6 +46,8 @@ namespace proc_navigation {
 
 class ProcNavigationNode {
  public:
+
+  static constexpr double DegreeToRad = M_PI / 180.0f;
   //==========================================================================
   // P U B L I C   C / D T O R S
 
@@ -57,6 +59,8 @@ class ProcNavigationNode {
 
   void Spin();
   void PublishData();
+  Eigen::Matrix3d EulerToRot(const Eigen::Vector3d &vec);
+  double DegreeToRadian(const double &degree);
 
  private:
   //==========================================================================
@@ -88,6 +92,10 @@ class ProcNavigationNode {
   geometry_msgs::Vector3 position_offset_;
   Eigen::Vector3d position_;
 };
+
+inline double ProcNavigationNode::DegreeToRadian(const double &degree) {
+  return degree * DegreeToRad;
+}
 
 }
 #endif  // PROC_NAVIGATION_NAVIGATION_NODE_H_
