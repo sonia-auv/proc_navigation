@@ -28,6 +28,8 @@
 
 #include <ros/ros.h>
 #include <memory>
+#include <eigen3/Eigen/Geometry>
+#include <tf/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <sensor_msgs/FluidPressure.h>
@@ -63,7 +65,7 @@ class ProcNavigationNode {
   bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
   bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
-  void FillPoseMsg(geometry_msgs::Vector3 position, geometry_msgs::Vector3 angle, nav_msgs::Odometry &msg);
+  void FillPoseMsg(Eigen::Vector3d position, geometry_msgs::Vector3 angle, nav_msgs::Odometry &msg);
   void FillTwistMsg(geometry_msgs::Vector3 linear_velocity, geometry_msgs::Vector3 angular_velocity, nav_msgs::Odometry &msg);
 
   //==========================================================================
@@ -84,7 +86,7 @@ class ProcNavigationNode {
   IMUData imu_data_;
 
   geometry_msgs::Vector3 position_offset_;
-  geometry_msgs::Vector3 position_;
+  Eigen::Vector3d position_;
 };
 
 }

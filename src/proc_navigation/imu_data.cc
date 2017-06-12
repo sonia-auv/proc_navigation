@@ -6,6 +6,7 @@
 #include "proc_navigation/imu_data.h"
 #include <cmath>
 
+
 namespace proc_navigation {
 
 //==============================================================================
@@ -25,15 +26,17 @@ IMUData::~IMUData() { }
 //-----------------------------------------------------------------------------
 //
 void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
-  quaternion_.w = msg.orientation.w;
-  quaternion_.x = msg.orientation.x;
-  quaternion_.y = msg.orientation.y;
-  quaternion_.z = msg.orientation.z;
+  Eigen::Matrix3d m;
+  m = Eigen::AngleAxisd(msg.orientation.x, Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(msg.orientation.y, Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(msg.orientation.z, Eigen::Vector3d::UnitX());
+
+  quaternion_ = Eigen::Quaterniond(m);
 
   // We use the IMU's data sheet transformation because Eigen return yaw on 0-180 basis,
   // which makes it impossible to use for us. This formulae gives yaw on 0-360 and independant from
   // roll pitch yaw
-  double q0 = quaternion_.w, q1 = quaternion_.x, q2 = quaternion_.y, q3 = quaternion_.z;
+  double q0 = msg.orientation.w, q1 = msg.orientation.x, q2 = msg.orientation.y, q3 = msg.orientation.z;
   double m11 = 2 * (q0*q0 - 0.5 + q1*q1);
   double m12 = 2 * (q1*q2 + q0*q3);
   double m13 = 2 * (q1*q3 - q0*q2);
@@ -65,7 +68,7 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
 
 //-----------------------------------------------------------------------------
 //
-geometry_msgs::Quaternion IMUData::GetQuaternion() {
+Eigen::Quaterniond IMUData::GetQuaternion() {
   return quaternion_;
 }
 

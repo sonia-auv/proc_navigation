@@ -49,6 +49,7 @@ find_package(
     message_generation
     geometry_msgs
     sensor_msgs
+    tf
 )
 
 #add_message_files(

@@ -45,9 +45,9 @@ ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
   navigation_xy_offset_server_ = nh_->advertiseService("/proc_navigation/set_world_x_y_offset",
                                   &ProcNavigationNode::SetWorldXYOffsetCallback, this);
 
-  position_.x = 0.0;
-  position_.y = 0.0;
-  position_.z = 0.0;
+  position_.x() = 0.0;
+  position_.y() = 0.0;
+  position_.z() = 0.0;
 
   navigation_odom_publisher_ = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 }
@@ -75,7 +75,7 @@ bool ProcNavigationNode::SetDepthOffsetCallback(
     SetDepthOffset::Request &rqst,
     SetDepthOffset::Response &response)
 {
-  position_.z = 0.0f;
+  position_.z() = 0.0f;
 
   imu_data_.SetNewDataReady();
 
@@ -86,8 +86,8 @@ bool ProcNavigationNode::SetWorldXYOffsetCallback(
     SetWorldXYOffset::Request &rqst,
     SetWorldXYOffset::Response &response)
 {
-  position_.x = 0.0f;
-  position_.y = 0.0f;
+  position_.x() = 0.0f;
+  position_.y() = 0.0f;
 
   imu_data_.SetNewDataReady();
 
@@ -112,14 +112,24 @@ void ProcNavigationNode::PublishData() {
     geometry_msgs::Vector3 velocity = dvl_data_.GetVelocityXYZ();
     geometry_msgs::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
     geometry_msgs::Vector3 euler_angle = imu_data_.GetOrientation();
+    Eigen::Quaterniond quaternion = imu_data_.GetQuaternion();
 
-    position_.x += position.x;
-    position_.y += position.y;
-    position_.z += position.z;
+    Eigen::Affine3d transform;
+    Eigen::Vector3d pose3(position.x, position.y, position.z);
 
-    if (fabs(position_from_depth - position_.z) > 0.1) {
-      position_.z = (position_from_depth + position_.z)/2;
-    }
+    transform = Eigen::Translation<double, 3>(pose3) * quaternion;
+
+    position_ = transform * pose3;
+
+    position_.z() = position_from_depth;
+
+//    position_.x += position.x;
+//    position_.y += position.y;
+//    position_.z += position.z;
+
+//    if (fabs(position_from_depth - position_.z) > 0.1) {
+//      position_.z = (position_from_depth + position_.z)/2;
+//    }
 
     FillPoseMsg(position_, euler_angle, odometry_msg);
     FillTwistMsg(velocity, angular_velocity, odometry_msg);
@@ -130,12 +140,12 @@ void ProcNavigationNode::PublishData() {
 
 //-----------------------------------------------------------------------------
 //
-void ProcNavigationNode::FillPoseMsg(geometry_msgs::Vector3 position,
+void ProcNavigationNode::FillPoseMsg(Eigen::Vector3d position,
                                      geometry_msgs::Vector3 angle,
                                      nav_msgs::Odometry &msg) {
-  msg.pose.pose.position.x = position.x;
-  msg.pose.pose.position.y = position.y;
-  msg.pose.pose.position.z = position.z;
+  msg.pose.pose.position.x = position.x();
+  msg.pose.pose.position.y = position.y();
+  msg.pose.pose.position.z = position.z();
   msg.pose.pose.orientation.x = angle.x;
   msg.pose.pose.orientation.y = angle.y;
   msg.pose.pose.orientation.z = angle.z;
