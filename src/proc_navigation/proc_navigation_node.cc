@@ -107,26 +107,36 @@ void ProcNavigationNode::PublishData() {
     odometry_msg.header.frame_id = "NED";
     odometry_msg.header.stamp = ros::Time::now();
 
-    geometry_msgs::Vector3 position = dvl_data_.GetPositionXYZ();
+//    geometry_msgs::Vector3 position = dvl_data_.GetPositionXYZ();
     double position_from_depth = dvl_data_.GetPositionZFromPressure();
     geometry_msgs::Vector3 velocity = dvl_data_.GetVelocityXYZ();
     geometry_msgs::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
     geometry_msgs::Vector3 euler_angle = imu_data_.GetOrientation();
     Eigen::Quaterniond quaternion = imu_data_.GetQuaternion();
 
-    Eigen::Matrix3d original_rotation = EulerToRot(Eigen::Vector3d(DegreeToRadian(euler_angle.z), 0, 0));
-    Eigen::Vector3d translation(position.x, position.y, position.z);
+//    quaternion.normalize();
 
-    position_ += (original_rotation * translation);
+    double x = 0.01,y = 0,z = 0;
 
-//    Eigen::Affine3d transform;
-//    Eigen::Vector3d pose3(position.x, position.y, position.z);
+//    Eigen::Translation<double, 3> translation(x, y, z);
+
+//    position_ += (translation * quaternion);
+
+//    Eigen::Matrix3d original_rotation = EulerToRot(Eigen::Vector3d(DegreeToRadian(euler_angle.z), 0, 0));
+//    Eigen::Vector3d translation(position.x, position.y, position.z);
 //
-//    transform = Eigen::Translation<double, 3>(pose3) * quaternion;
+//    position_ += (original_rotation * translation);
+
+    Eigen::Affine3d transform;
+    Eigen::Vector3d incrementPose(x, y, z);
+
+
+
+    transform = quaternion;
 
 //    transform = quaternion;
 
-//    position_ += transform * pose3;
+    position_ += transform * incrementPose;
 
     position_.z() = position_from_depth;
 

@@ -27,9 +27,11 @@ IMUData::~IMUData() { }
 //
 void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   Eigen::Matrix3d m;
-  m = Eigen::AngleAxisd(msg.orientation.x, Eigen::Vector3d::UnitX())
-      * Eigen::AngleAxisd(msg.orientation.y, Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(msg.orientation.z, Eigen::Vector3d::UnitZ());
+  m = Eigen::AngleAxisd(M_PI, Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
+
+//  quaternion_ = Eigen::Quaterniond(m);
 
   quaternion_ = Eigen::Quaterniond(msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z);
 
@@ -41,13 +43,15 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   double m12 = 2 * (q1*q2 + q0*q3);
   double m13 = 2 * (q1*q3 - q0*q2);
 
-  //double m21 = 2 * (q1*q2 - q0*q3);
-  //double m22 = 2 * (q0*q0 - 0.5 + q2*q2);
+  double m21 = 2 * (q1*q2 - q0*q3);
+  double m22 = 2 * (q0*q0 - 0.5 + q2*q2);
   double m23 = 2 * (q2*q3 + q0*q1);
 
-  //double m31 = 2 * (q1*q3 + q0*q2);
-  //double m32 = 2 * (q2*q3 - q0*q1);
+  double m31 = 2 * (q1*q3 + q0*q2);
+  double m32 = 2 * (q2*q3 - q0*q1);
   double m33 = 2 * (q0*q0 - 0.5 + q3*q3);
+
+//  std::cout << m11 << "," << m12 << "," << m13 << "," << m21 << ","<< m22 << ","<< m23 << "," << m31 << ","<< m32 << ","<< m33 << std::endl;
 
   double pitch = std::asin(-m13);
   double roll = std::atan2(m23,m33);
