@@ -107,42 +107,21 @@ void ProcNavigationNode::PublishData() {
     odometry_msg.header.frame_id = "NED";
     odometry_msg.header.stamp = ros::Time::now();
 
-//    geometry_msgs::Vector3 position = dvl_data_.GetPositionXYZ();
+    geometry_msgs::Vector3 position = dvl_data_.GetPositionXYZ();
     double position_from_depth = dvl_data_.GetPositionZFromPressure();
     geometry_msgs::Vector3 velocity = dvl_data_.GetVelocityXYZ();
     geometry_msgs::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
     geometry_msgs::Vector3 euler_angle = imu_data_.GetOrientation();
     Eigen::Quaterniond quaternion = imu_data_.GetQuaternion();
 
-//    quaternion.normalize();
-
-    double x = 0.01,y = 0,z = 0;
-
-//    Eigen::Translation<double, 3> translation(x, y, z);
-
-//    position_ += (translation * quaternion);
-
-//    Eigen::Matrix3d original_rotation = EulerToRot(Eigen::Vector3d(DegreeToRadian(euler_angle.z), 0, 0));
-//    Eigen::Vector3d translation(position.x, position.y, position.z);
-//
-//    position_ += (original_rotation * translation);
-
     Eigen::Affine3d transform;
-    Eigen::Vector3d incrementPose(x, y, z);
-
-
+    Eigen::Vector3d incrementPose(position.x, position.y, position.z);
 
     transform = quaternion;
-
-//    transform = quaternion;
 
     position_ += transform * incrementPose;
 
     position_.z() = position_from_depth;
-
-//    position_.x += position.x;
-//    position_.y += position.y;
-//    position_.z += position.z;
 
 //    if (fabs(position_from_depth - position_.z) > 0.1) {
 //      position_.z = (position_from_depth + position_.z)/2;
