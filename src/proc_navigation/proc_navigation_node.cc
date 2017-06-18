@@ -88,6 +88,7 @@ bool ProcNavigationNode::SetWorldXYOffsetCallback(
 {
   position_.x() = 0.0f;
   position_.y() = 0.0f;
+  z_offset_ = dvl_data_.GetPositionZFromPressure();
 
   imu_data_.SetNewDataReady();
 
@@ -121,7 +122,7 @@ void ProcNavigationNode::PublishData() {
 
     position_ += transform * incrementPose;
 
-    position_.z() = position_from_depth + z_offset_;
+    position_.z() = position_from_depth - z_offset_;
 
 //    if (fabs(position_from_depth - position_.z) > 0.1) {
 //      position_.z = (position_from_depth + position_.z)/2;
