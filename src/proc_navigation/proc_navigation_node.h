@@ -89,7 +89,7 @@ class ProcNavigationNode {
   DvlData dvl_data_;
   IMUData imu_data_;
 
-  geometry_msgs::Vector3 position_offset_;
+  double z_offset_;
   Eigen::Vector3d position_;
 };
 
