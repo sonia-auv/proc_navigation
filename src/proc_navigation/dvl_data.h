@@ -16,7 +16,7 @@ class DvlData: public NavigationDevice {
   //==========================================================================
   // C O N S T  ,  T Y P E D E F   A N D   E N U M
 
-  static constexpr double dBarToMeterOfWater = 1.01972;
+  static constexpr double barToMeterOfWater = 10.1972;
 
   //==========================================================================
   // P U B L I C   C / D T O R S
