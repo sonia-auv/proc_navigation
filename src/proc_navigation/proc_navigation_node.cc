@@ -75,7 +75,7 @@ bool ProcNavigationNode::SetDepthOffsetCallback(
     SetDepthOffset::Request &rqst,
     SetDepthOffset::Response &response)
 {
-  position_.z() = 0.0f;
+  position_.z() = dvl_data_.GetPositionZFromPressure();
 
   imu_data_.SetNewDataReady();
 
