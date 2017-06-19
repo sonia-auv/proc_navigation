@@ -128,7 +128,7 @@ void ProcNavigationNode::PublishData() {
 //      position_.z = (position_from_depth + position_.z)/2;
 //    }
 
-    FillPoseMsg(position_, euler_angle, odometry_msg);
+    FillPoseMsg(position_, quaternion, odometry_msg);
     FillTwistMsg(velocity, angular_velocity, odometry_msg);
 
     navigation_odom_publisher_.publish(odometry_msg);
@@ -138,14 +138,15 @@ void ProcNavigationNode::PublishData() {
 //-----------------------------------------------------------------------------
 //
 void ProcNavigationNode::FillPoseMsg(Eigen::Vector3d position,
-                                     geometry_msgs::Vector3 angle,
+                                     Eigen::Quaterniond angle,
                                      nav_msgs::Odometry &msg) {
   msg.pose.pose.position.x = position.x();
   msg.pose.pose.position.y = position.y();
   msg.pose.pose.position.z = position.z();
-  msg.pose.pose.orientation.x = angle.x;
-  msg.pose.pose.orientation.y = angle.y;
-  msg.pose.pose.orientation.z = angle.z;
+  msg.pose.pose.orientation.x = angle.x();
+  msg.pose.pose.orientation.y = angle.y();
+  msg.pose.pose.orientation.z = angle.z();
+  msg.pose.pose.orientation.w = angle.w();
 }
 
 //-----------------------------------------------------------------------------

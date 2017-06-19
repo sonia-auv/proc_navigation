@@ -69,7 +69,7 @@ class ProcNavigationNode {
   bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
   bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
-  void FillPoseMsg(Eigen::Vector3d position, geometry_msgs::Vector3 angle, nav_msgs::Odometry &msg);
+  void FillPoseMsg(Eigen::Vector3d position, Eigen::Quaterniond angle, nav_msgs::Odometry &msg);
   void FillTwistMsg(geometry_msgs::Vector3 linear_velocity, geometry_msgs::Vector3 angular_velocity, nav_msgs::Odometry &msg);
 
   //==========================================================================
