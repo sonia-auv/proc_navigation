@@ -44,8 +44,8 @@ geometry_msgs::Vector3 DvlData::GetPositionXYZ() {
   ros::Duration dt = ros::Time::now() - last_timestamp_;
   double dt_sec = dt.toSec();
 
-  position.x = dvl_twist_.twist.linear.x * dt_sec;
-  position.y = dvl_twist_.twist.linear.y * dt_sec;
+  position.x = dvl_twist_.twist.linear.x * dvl_twist_.twist.angular.x;
+  position.y = dvl_twist_.twist.linear.y * dvl_twist_.twist.angular.y;
   position.z = dvl_twist_.twist.linear.z * dt_sec;
 
   last_timestamp_ = ros::Time::now();
