@@ -131,6 +131,20 @@ void ProcNavigationNode::PublishData() {
     FillPoseMsg(position_, euler_angle, odometry_msg);
     FillTwistMsg(velocity, angular_velocity, odometry_msg);
 
+    odometry_msg.pose.covariance = {-1, 0, 0, 0, 0, 0,
+                                    0, -1, 0, 0, 0, 0,
+                                    0, 0, -1, 0, 0, 0,
+                                    0, 0, 0, 99999, 0, 0,
+                                    0, 0, 0, 0, 99999, 0,
+                                    0, 0, 0, 0, 0, 99999};
+
+    odometry_msg.twist.covariance = {-1, 0, 0, 0, 0, 0,
+                                    0, -1, 0, 0, 0, 0,
+                                    0, 0, -1, 0, 0, 0,
+                                    0, 0, 0, 99999, 0, 0,
+                                    0, 0, 0, 0, 99999, 0,
+                                    0, 0, 0, 0, 0, 99999};
+
     navigation_odom_publisher_.publish(odometry_msg);
   }
 }
