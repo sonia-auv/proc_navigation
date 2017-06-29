@@ -130,6 +130,11 @@ void ProcNavigationNode::PublishData() {
     FillPoseMsg(position_, euler_angle, odometry_msg);
     FillTwistMsg(velocity, angular_velocity, odometry_msg);
 
+    odometry_msg.pose.pose.orientation.w = quaternion.w();
+    odometry_msg.pose.pose.orientation.x = quaternion.x();
+    odometry_msg.pose.pose.orientation.y = quaternion.y();
+    odometry_msg.pose.pose.orientation.z = quaternion.z();
+
     odometry_msg.pose.covariance = {-1, 0, 0, 0, 0, 0,
                                     0, -1, 0, 0, 0, 0,
                                     0, 0, -1, 0, 0, 0,
