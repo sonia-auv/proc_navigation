@@ -88,7 +88,6 @@ bool ProcNavigationNode::SetWorldXYOffsetCallback(
 {
   position_.x() = 0.0f;
   position_.y() = 0.0f;
-  z_offset_ = dvl_data_.GetPositionZFromPressure();
 
   imu_data_.SetNewDataReady();
 
