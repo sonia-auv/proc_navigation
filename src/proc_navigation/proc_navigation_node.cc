@@ -33,23 +33,30 @@ namespace proc_navigation {
 //-----------------------------------------------------------------------------
 //
 ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
+
   dvl_twist_subscriber_ = nh_->subscribe("/provider_dvl/dvl_twist", 100,
                                            &DvlData::DvlTwistCallback, &dvl_data_);
+
   dvl_pressure_subscriber_ = nh_->subscribe("/provider_dvl/dvl_pressure", 100,
                                            &DvlData::DvlPressureCallback, &dvl_data_);
+
   imu_subscriber_ = nh_->subscribe("/provider_imu/imu", 100,
                                            &IMUData::IMUMsgCallback, &imu_data_);
 
   navigation_depth_offset_server_ = nh_->advertiseService("/proc_navigation/set_depth_offset",
                                &ProcNavigationNode::SetDepthOffsetCallback, this);
+
   navigation_xy_offset_server_ = nh_->advertiseService("/proc_navigation/set_world_x_y_offset",
                                   &ProcNavigationNode::SetWorldXYOffsetCallback, this);
+
+
+  navigation_odom_publisher_ = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 
   position_.x() = 0.0;
   position_.y() = 0.0;
   position_.z() = 0.0;
 
-  navigation_odom_publisher_ = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -103,29 +110,31 @@ void ProcNavigationNode::PublishData() {
     dvl_data_.SetNewDataUsed();
     imu_data_.SetNewDataUsed();
 
+
     nav_msgs::Odometry odometry_msg;
     odometry_msg.header.frame_id = "NED";
     odometry_msg.header.stamp = ros::Time::now();
 
-    geometry_msgs::Vector3 position = dvl_data_.GetPositionXYZ();
-    double position_from_depth = dvl_data_.GetPositionZFromPressure();
-    geometry_msgs::Vector3 velocity = dvl_data_.GetVelocityXYZ();
-    geometry_msgs::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
-    geometry_msgs::Vector3 euler_angle = imu_data_.GetOrientation();
-    Eigen::Quaterniond quaternion = imu_data_.GetQuaternion();
+    tf::Vector3 position = dvl_data_.GetPositionXYZ();
+    tf::Vector3 velocity = dvl_data_.GetVelocityXYZ();
+    tf::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
+    tf::Vector3 euler_angle = imu_data_.GetOrientation();
+    tf::Quaternion quaternion = imu_data_.GetQuaternion();
+
+    position.setZ(dvl_data_.GetPositionZFromPressure() - z_offset_);
+
+    dvl_filter_.update_dvl(position, postion_estimation_);
+    imu_filter_.update_imu(quaternion, orientation_estimation_);
+
+    Eigen::Quaterniond quaterniond = Eigen::Quaterniond(quaternion.w(), quaternion.x(), quaternion.y(),
+                                                        quaternion.z());
 
     Eigen::Affine3d transform;
-    Eigen::Vector3d incrementPose(position.x, position.y, position.z);
+    Eigen::Vector3d incrementPose(position.x(), position.y(), position.z());
 
-    transform = quaternion;
+    transform = quaterniond;
 
     position_ += transform * incrementPose;
-
-    position_.z() = position_from_depth - z_offset_;
-
-//    if (fabs(position_from_depth - position_.z) > 0.1) {
-//      position_.z = (position_from_depth + position_.z)/2;
-//    }
 
     FillPoseMsg(position_, euler_angle, odometry_msg);
     FillTwistMsg(velocity, angular_velocity, odometry_msg);
@@ -137,36 +146,44 @@ void ProcNavigationNode::PublishData() {
 //-----------------------------------------------------------------------------
 //
 void ProcNavigationNode::FillPoseMsg(Eigen::Vector3d position,
-                                     geometry_msgs::Vector3 angle,
+                                     tf::Vector3 angle,
                                      nav_msgs::Odometry &msg) {
   msg.pose.pose.position.x = position.x();
   msg.pose.pose.position.y = position.y();
   msg.pose.pose.position.z = position.z();
-  msg.pose.pose.orientation.x = angle.x;
-  msg.pose.pose.orientation.y = angle.y;
-  msg.pose.pose.orientation.z = angle.z;
+  msg.pose.pose.orientation.x = angle.x();
+  msg.pose.pose.orientation.y = angle.y();
+  msg.pose.pose.orientation.z = angle.z();
 }
 
 //-----------------------------------------------------------------------------
 //
-void ProcNavigationNode::FillTwistMsg(geometry_msgs::Vector3 linear_velocity,
-                                      geometry_msgs::Vector3 angular_velocity,
+void ProcNavigationNode::FillTwistMsg(tf::Vector3 linear_velocity,
+                                      tf::Vector3 angular_velocity,
                                       nav_msgs::Odometry &msg) {
-  msg.twist.twist.linear.x = linear_velocity.x;
-  msg.twist.twist.linear.y = linear_velocity.y;
-  msg.twist.twist.linear.z = linear_velocity.z;
-  msg.twist.twist.angular.x = angular_velocity.x;
-  msg.twist.twist.angular.y = angular_velocity.y;
-  msg.twist.twist.angular.z = angular_velocity.z;
+  msg.twist.twist.linear.x = linear_velocity.x();
+  msg.twist.twist.linear.y = linear_velocity.y();
+  msg.twist.twist.linear.z = linear_velocity.z();
+  msg.twist.twist.angular.x = angular_velocity.x();
+  msg.twist.twist.angular.y = angular_velocity.y();
+  msg.twist.twist.angular.z = angular_velocity.z();
 }
 
+tf::Vector3 ProcNavigationNode::PoseMsgToTf(const geometry_msgs::Vector3 position) {
 
-Eigen::Matrix3d ProcNavigationNode::EulerToRot(const Eigen::Vector3d &vec) {
-  Eigen::Matrix3d m;
-  m = Eigen::AngleAxisd(vec.x(), Eigen::Vector3d::UnitZ())
-      * Eigen::AngleAxisd(vec.y(), Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(vec.z(), Eigen::Vector3d::UnitX());
-  return m;
+    tf::Vector3 pose; pose.setValue(position.x,position.y,position.z);
+
+    return pose;
+
+}
+
+tf::Quaternion ProcNavigationNode::QuaMsgToTf(const Eigen::Quaterniond quaternion) {
+
+    tf::Quaternion qua;
+
+    qua.setValue(quaternion.x(),quaternion.y(),quaternion.z(),quaternion.w());
+
+    return qua;
 }
 
 }  // namespace proc_navigation

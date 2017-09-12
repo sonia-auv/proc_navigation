@@ -7,7 +7,8 @@
 
 #include <geometry_msgs/TwistStamped.h>
 #include <sensor_msgs/FluidPressure.h>
-#include "proc_navigation/navigation_device.h"
+#include <tf/tf.h>
+#include "navigation_device.h"
 
 namespace proc_navigation {
 
@@ -30,8 +31,8 @@ class DvlData: public NavigationDevice {
   void DvlTwistCallback(geometry_msgs::TwistStamped msg);
   void DvlPressureCallback(sensor_msgs::FluidPressure msg);
 
-  geometry_msgs::Vector3 GetPositionXYZ();
-  geometry_msgs::Vector3 GetVelocityXYZ();
+  tf::Vector3 GetPositionXYZ();
+  tf::Vector3 GetVelocityXYZ();
   double GetPositionZFromPressure();
   sensor_msgs::FluidPressure GetPressure();
 

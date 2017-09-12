@@ -30,6 +30,7 @@
 #include <memory>
 #include <eigen3/Eigen/Geometry>
 #include <tf/LinearMath/Matrix3x3.h>
+#include <tf/tf.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <sensor_msgs/FluidPressure.h>
@@ -39,8 +40,9 @@
 #include <proc_navigation/SetDepthOffset.h>
 #include <proc_navigation/SetWorldXYOffset.h>
 
-#include "dvl_data.h"
-#include "imu_data.h"
+#include "proc_navigation/devices/dvl_data.h"
+#include "proc_navigation/devices/imu_data.h"
+#include "proc_navigation/ekf/extended_kalman_filter.h"
 
 namespace proc_navigation {
 
@@ -59,7 +61,6 @@ class ProcNavigationNode {
 
   void Spin();
   void PublishData();
-  Eigen::Matrix3d EulerToRot(const Eigen::Vector3d &vec);
   double DegreeToRadian(const double &degree);
 
  private:
@@ -69,8 +70,10 @@ class ProcNavigationNode {
   bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
   bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
-  void FillPoseMsg(Eigen::Vector3d position, geometry_msgs::Vector3 angle, nav_msgs::Odometry &msg);
-  void FillTwistMsg(geometry_msgs::Vector3 linear_velocity, geometry_msgs::Vector3 angular_velocity, nav_msgs::Odometry &msg);
+  void FillPoseMsg(Eigen::Vector3d position, tf::Vector3 angle, nav_msgs::Odometry &msg);
+  void FillTwistMsg(tf::Vector3 linear_velocity, tf::Vector3 angular_velocity, nav_msgs::Odometry &msg);
+  tf::Vector3 PoseMsgToTf(const geometry_msgs::Vector3 position);
+  tf::Quaternion QuaMsgToTf(const Eigen::Quaterniond quaternion);
 
   //==========================================================================
   // P R I V A T E   M E M B E R S
@@ -86,8 +89,15 @@ class ProcNavigationNode {
   ros::ServiceServer navigation_depth_offset_server_;
   ros::ServiceServer navigation_xy_offset_server_;
 
+
+
   DvlData dvl_data_;
   IMUData imu_data_;
+
+  ExtendedKalmanFilter dvl_filter_;
+  ExtendedKalmanFilter imu_filter_;
+  tf::Vector3 postion_estimation_;
+  tf::Quaternion orientation_estimation_;
 
   double z_offset_;
   Eigen::Vector3d position_;

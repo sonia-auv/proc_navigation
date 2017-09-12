@@ -6,7 +6,8 @@
 #define PROC_NAVIGATION_IMUDATA_HPP
 
 #include <sensor_msgs/Imu.h>
-#include "proc_navigation/navigation_device.h"
+#include <tf/tf.h>
+#include "navigation_device.h"
 #include <eigen3/Eigen/Geometry>
 
 namespace proc_navigation {
@@ -28,9 +29,9 @@ class IMUData: public NavigationDevice {
   // P U B L I C   M E T H O D S
 
   void IMUMsgCallback(sensor_msgs::Imu msg);
-  Eigen::Quaterniond GetQuaternion();
-  geometry_msgs::Vector3 GetOrientation();
-  geometry_msgs::Vector3 GetAngularVelocity();
+  tf::Quaternion GetQuaternion();
+  tf::Vector3 GetOrientation();
+  tf::Vector3 GetAngularVelocity();
 
  private:
   //==========================================================================
@@ -41,8 +42,8 @@ class IMUData: public NavigationDevice {
   //==========================================================================
   // P R I V A T E   M E M B E R S
 
-  Eigen::Quaterniond quaternion_;
-  geometry_msgs::Vector3 euler_angle_, angular_velocity_, linear_acceleration_;
+  tf::Quaternion quaternion_;
+  tf::Vector3 euler_angle_, angular_velocity_, linear_acceleration_;
 };
 
 inline double IMUData::RadianToDegree(const double &radian) {

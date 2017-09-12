@@ -3,7 +3,7 @@
 //
 
 #include <ros/ros.h>
-#include "proc_navigation/dvl_data.h"
+#include "dvl_data.h"
 
 namespace proc_navigation {
 
@@ -39,14 +39,14 @@ void DvlData::DvlPressureCallback(sensor_msgs::FluidPressure msg) {
 
 //------------------------------------------------------------------------------
 //
-geometry_msgs::Vector3 DvlData::GetPositionXYZ() {
-  geometry_msgs::Vector3 position;
+//
+tf::Vector3 DvlData::GetPositionXYZ() {
+  tf::Vector3 position;
   ros::Duration dt = ros::Time::now() - last_timestamp_;
   double dt_sec = dt.toSec();
 
-  position.x = dvl_twist_.twist.linear.x * dt_sec;
-  position.y = dvl_twist_.twist.linear.y * dt_sec;
-  position.z = dvl_twist_.twist.linear.z * dt_sec;
+  position.setValue(dvl_twist_.twist.linear.x * dt_sec, dvl_twist_.twist.linear.y * dt_sec,
+                    dvl_twist_.twist.linear.z * dt_sec);
 
   last_timestamp_ = ros::Time::now();
 
@@ -55,8 +55,12 @@ geometry_msgs::Vector3 DvlData::GetPositionXYZ() {
 
 //------------------------------------------------------------------------------
 //
-geometry_msgs::Vector3 DvlData::GetVelocityXYZ() {
-  return dvl_twist_.twist.linear;
+tf::Vector3 DvlData::GetVelocityXYZ() {
+  tf::Vector3 twist;
+
+  twist.setValue(dvl_twist_.twist.linear.x, dvl_twist_.twist.linear.y,
+                 dvl_twist_.twist.linear.z);
+  return twist;
 }
 
 //------------------------------------------------------------------------------
