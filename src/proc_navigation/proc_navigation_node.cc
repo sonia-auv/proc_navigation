@@ -116,12 +116,11 @@ void ProcNavigationNode::PublishData() {
     odometry_msg.header.stamp = ros::Time::now();
 
     tf::Vector3 position = dvl_data_.GetPositionXYZ();
+    double position_from_depth = dvl_data_.GetPositionZFromPressure();
     tf::Vector3 velocity = dvl_data_.GetVelocityXYZ();
     tf::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
     tf::Vector3 euler_angle = imu_data_.GetOrientation();
     tf::Quaternion quaternion = imu_data_.GetQuaternion();
-
-    position.setZ(dvl_data_.GetPositionZFromPressure() - z_offset_);
 
     dvl_filter_.update_dvl(position, postion_estimation_);
     imu_filter_.update_imu(quaternion, orientation_estimation_);
@@ -135,6 +134,8 @@ void ProcNavigationNode::PublishData() {
     transform = quaterniond;
 
     position_ += transform * incrementPose;
+
+    position_.z() = position_from_depth - z_offset_;
 
     FillPoseMsg(position_, euler_angle, odometry_msg);
     FillTwistMsg(velocity, angular_velocity, odometry_msg);

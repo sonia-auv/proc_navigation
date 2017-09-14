@@ -53,7 +53,7 @@ class ExtendedKalmanFilter {
     void update_dvl(tf::Vector3 measurement, tf::Vector3 &estimation);
     void update_imu(tf::Quaternion measurement, tf::Quaternion &estimation);
 
-    void initialization();
+    void initialization(float pval, float qval, float rval);
 
     private:
     //==========================================================================

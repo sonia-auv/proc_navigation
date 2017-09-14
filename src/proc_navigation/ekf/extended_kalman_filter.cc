@@ -34,7 +34,7 @@ namespace proc_navigation {
 //
     ExtendedKalmanFilter::ExtendedKalmanFilter() {
 
-        initialization();
+        initialization(0.1, 1^-4, 0.1);
 
     }
 
@@ -44,7 +44,7 @@ namespace proc_navigation {
 
 //==============================================================================
 //  M E T H O D   S E C T I O N
-    void ExtendedKalmanFilter::initialization() {
+    void ExtendedKalmanFilter::initialization(float pval, float qval, float rval) {
 
         imu_previous_noise_.setIdentity();
         imu_post_noise_.setIdentity();
@@ -59,7 +59,17 @@ namespace proc_navigation {
         dvl_jacobians_measurement_.setIdentity();
         dvl_process_noise_.setIdentity();
         dvl_measurement_noise_.setIdentity();
-        
+
+        imu_previous_noise_ *= 0;
+        imu_previous_noise_ *= pval;
+        imu_process_noise_ *= qval;
+        imu_measurement_noise_ *= rval;
+
+        dvl_previous_noise_ *= 0;
+        dvl_previous_noise_ *= pval;
+        dvl_process_noise_ *= qval;
+        dvl_measurement_noise_ *= rval;
+
     }
 
 
