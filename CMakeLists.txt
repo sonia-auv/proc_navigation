@@ -43,10 +43,6 @@ set(proc_navigation_SRC_DIR "src")
 # C A T K I N   C O N F I G U R A T I O N
 
 find_package(PkgConfig)
-pkg_check_modules(BFL REQUIRED orocos-bfl)
-
-include_directories(${BFL_INCLUDE_DIRS})
-link_directories(${BFL_LIBRARY_DIRS})
 
 find_package(
     catkin REQUIRED COMPONENTS
