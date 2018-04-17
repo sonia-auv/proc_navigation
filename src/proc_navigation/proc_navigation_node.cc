@@ -65,11 +65,11 @@
 	//
 	ProcNavigationNode::~ProcNavigationNode()
     {
-      dvlTwistSubscriber_.shutdown();
-      dvlPressureSubscriber_.shutdown();
-      imuSubscriber_.shutdown();
-      navigationDepthOffsetServer_.shutdown();
-      navigationXYOffsetServer_.shutdown();
+        dvlTwistSubscriber_.shutdown();
+        dvlPressureSubscriber_.shutdown();
+        imuSubscriber_.shutdown();
+        navigationDepthOffsetServer_.shutdown();
+        navigationXYOffsetServer_.shutdown();
     }
 
 	//==============================================================================
@@ -80,7 +80,8 @@
 	void ProcNavigationNode::Spin()
 	{
 		ros::Rate r(100); // 100 hz
-		while(ros::ok()) {
+		while(ros::ok())
+        {
 			ros::spinOnce();
             ProcessCartesianPose();
 			r.sleep();

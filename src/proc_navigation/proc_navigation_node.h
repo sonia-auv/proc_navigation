@@ -46,8 +46,6 @@ namespace proc_navigation {
 
     class ProcNavigationNode {
     public:
-
-        static constexpr double DegreeToRad = M_PI / 180.0f;
         //==========================================================================
         // P U B L I C   C / D T O R S
 
