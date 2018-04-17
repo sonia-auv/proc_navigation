@@ -60,20 +60,20 @@ namespace proc_navigation {
         dvl_process_noise_.setIdentity();
         dvl_measurement_noise_.setIdentity();
 
-        imu_previous_noise_ *= 0;
-        imu_previous_noise_ *= pval;
-        imu_process_noise_ *= qval;
+        imu_previous_noise_    *= 0;
+        imu_previous_noise_    *= pval;
+        imu_process_noise_     *= qval;
         imu_measurement_noise_ *= rval;
 
-        dvl_previous_noise_ *= 0;
-        dvl_previous_noise_ *= pval;
-        dvl_process_noise_ *= qval;
+        dvl_previous_noise_    *= 0;
+        dvl_previous_noise_    *= pval;
+        dvl_process_noise_     *= qval;
         dvl_measurement_noise_ *= rval;
 
     }
 
 
-    void ExtendedKalmanFilter::update_dvl(tf::Vector3 measurement, tf::Vector3 &estimation){
+    void ExtendedKalmanFilter::update_dvl(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation){
 
         DvlMatrix inverse_matrix, gain;
         DvlEstimationMatrix estimation_matrix = dvl_tf_to_eigen(measurement);
@@ -92,7 +92,7 @@ namespace proc_navigation {
 
     }
 
-    void ExtendedKalmanFilter::update_imu(tf::Quaternion measurement, tf::Quaternion &estimation){
+    void ExtendedKalmanFilter::update_imu(Eigen::Quaterniond &measurement, Eigen::Quaterniond &estimation){
 
         ImuMatrix inverse_matrix, gain;
         ImuEstimationMatrix estimation_matrix = imu_tf_to_eigen(measurement);
@@ -112,48 +112,41 @@ namespace proc_navigation {
     }
 
 
-    DvlEstimationMatrix ExtendedKalmanFilter::dvl_tf_to_eigen(tf::Vector3 measurement){
+    DvlEstimationMatrix ExtendedKalmanFilter::dvl_tf_to_eigen(Eigen::Vector3d measurement){
 
         DvlEstimationMatrix convert_tf;
 
-        convert_tf(0,0) = float(measurement.x());
-        convert_tf(1,0) = float(measurement.y());
-        convert_tf(2,0) = float(measurement.z());
+        convert_tf(0,0) = measurement(0);
+        convert_tf(1,0) = measurement(1);
+        convert_tf(2,0) = measurement(2);
 
         return convert_tf;
     }
 
-    ImuEstimationMatrix ExtendedKalmanFilter::imu_tf_to_eigen(tf::Quaternion measurement){
+    ImuEstimationMatrix ExtendedKalmanFilter::imu_tf_to_eigen(Eigen::Quaterniond measurement){
 
         ImuEstimationMatrix convert_tf;
 
-        convert_tf(0,0) = float(measurement.x());
-        convert_tf(1,0) = float(measurement.y());
-        convert_tf(2,0) = float(measurement.z());
-        convert_tf(3,0) = float(measurement.w());
+        convert_tf(0,0) = measurement.x();
+        convert_tf(1,0) = measurement.y();
+        convert_tf(2,0) = measurement.z();
+        convert_tf(3,0) = measurement.w();
 
         return convert_tf;
     }
 
-    tf::Quaternion ExtendedKalmanFilter::imu_eigen_to_tf(ImuEstimationMatrix estimation){
+    Eigen::Quaterniond ExtendedKalmanFilter::imu_eigen_to_tf(ImuEstimationMatrix estimation){
 
-        tf::Quaternion convert_eigen;
-
-        convert_eigen.setX(estimation(0,0));
-        convert_eigen.setY(estimation(1,0));
-        convert_eigen.setZ(estimation(2,0));
-        convert_eigen.setW(estimation(3,0));
+        Eigen::Quaterniond convert_eigen(estimation(0,0), estimation(1,0), estimation(2,0), estimation(3,0));
 
         return convert_eigen;
     }
 
-    tf::Vector3 ExtendedKalmanFilter::dvl_eigen_to_tf(DvlEstimationMatrix estimation){
+    Eigen::Vector3d ExtendedKalmanFilter::dvl_eigen_to_tf(DvlEstimationMatrix estimation){
 
-        tf::Vector3 convert_eigen;
+        Eigen::Vector3d convert_eigen;
 
-        convert_eigen.setX(estimation(0,0));
-        convert_eigen.setY(estimation(1,0));
-        convert_eigen.setZ(estimation(2,0));
+        convert_eigen << estimation(0,0), estimation(0,1), estimation(0,2);
 
         return convert_eigen;
     }

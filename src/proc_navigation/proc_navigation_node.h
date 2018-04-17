@@ -46,61 +46,62 @@
 
 namespace proc_navigation {
 
-class ProcNavigationNode {
- public:
+    class ProcNavigationNode {
+    public:
 
-  static constexpr double DegreeToRad = M_PI / 180.0f;
-  //==========================================================================
-  // P U B L I C   C / D T O R S
+        static constexpr double DegreeToRad = M_PI / 180.0f;
+        //==========================================================================
+        // P U B L I C   C / D T O R S
 
-  ProcNavigationNode(const ros::NodeHandlePtr &nh);
-  ~ProcNavigationNode();
+        ProcNavigationNode(const ros::NodeHandlePtr &nh);
+        ~ProcNavigationNode();
 
-  //==========================================================================
-  // P U B L I C   M E T H O D S
+        //==========================================================================
+        // P U B L I C   M E T H O D S
 
-  void Spin();
-  void PublishData();
-  double DegreeToRadian(const double &degree);
+        void Spin();
+        void PublishData();
+        double DegreeToRadian(const double &degree);
 
- private:
-  //==========================================================================
-  // P R I V A T E   M E T H O D S
+    private:
+        //==========================================================================
+        // P R I V A T E   M E T H O D S
 
-  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
-  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
+        bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
+        bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
-  void FillPoseMsg(Eigen::Vector3d position, tf::Vector3 angle, nav_msgs::Odometry &msg);
-  void FillTwistMsg(tf::Vector3 linear_velocity, tf::Vector3 angular_velocity, nav_msgs::Odometry &msg);
-  tf::Vector3 PoseMsgToTf(const geometry_msgs::Vector3 position);
-  tf::Quaternion QuaMsgToTf(const Eigen::Quaterniond quaternion);
+        void FillPoseMsg(Eigen::Vector3d &position, Eigen::Vector3d &angle, nav_msgs::Odometry &msg);
+        void FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg);
 
-  //==========================================================================
-  // P R I V A T E   M E M B E R S
+        //==========================================================================
+        // P R I V A T E   M E M B E R S
 
-  ros::NodeHandlePtr nh_;
+        ros::NodeHandlePtr nh_;
 
-  ros::Subscriber dvl_twist_subscriber_;
-  ros::Subscriber dvl_pressure_subscriber_;
-  ros::Subscriber imu_subscriber_;
+        ros::Subscriber dvl_twist_subscriber_;
+        ros::Subscriber dvl_pressure_subscriber_;
+        ros::Subscriber imu_subscriber_;
 
-  ros::Publisher navigation_odom_publisher_;
+        ros::Publisher navigation_odom_publisher_;
 
-  ros::ServiceServer navigation_depth_offset_server_;
-  ros::ServiceServer navigation_xy_offset_server_;
+        ros::ServiceServer navigation_depth_offset_server_;
+        ros::ServiceServer navigation_xy_offset_server_;
 
 
 
-  DvlData dvl_data_;
-  IMUData imu_data_;
+        DvlData dvlData_;
+        IMUData imuData_;
 
-  ExtendedKalmanFilter dvl_filter_;
-  ExtendedKalmanFilter imu_filter_;
-  tf::Vector3 postion_estimation_;
-  tf::Quaternion orientation_estimation_;
+        double zOffset_;
+        double positionFromDepth_;
 
-  double z_offset_;
-  Eigen::Vector3d position_;
+        Eigen::Quaterniond quaternion_;
+        Eigen::Vector3d    position_;
+        Eigen::Vector3d    incrementPosition_;
+        Eigen::Vector3d    velocity_;
+        Eigen::Vector3d    angularVelocity_;
+        Eigen::Vector3d    eulerAngel_;
+
 };
 
 inline double ProcNavigationNode::DegreeToRadian(const double &degree) {

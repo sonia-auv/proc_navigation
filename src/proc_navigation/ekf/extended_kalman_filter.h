@@ -29,13 +29,11 @@
 #include <ros/ros.h>
 #include <memory>
 #include <eigen3/Eigen/Geometry>
-#include <tf/LinearMath/Matrix3x3.h>
-#include <tf/tf.h>
 
-typedef Eigen::Matrix<float, 3, 3> DvlMatrix;
-typedef Eigen::Matrix<float, 4, 4> ImuMatrix;
-typedef Eigen::Matrix<float, 4, 1> ImuEstimationMatrix;
-typedef Eigen::Matrix<float, 3, 1> DvlEstimationMatrix;
+typedef Eigen::Matrix<double, 3, 3> DvlMatrix;
+typedef Eigen::Matrix<double, 4, 4> ImuMatrix;
+typedef Eigen::Matrix<double, 4, 1> ImuEstimationMatrix;
+typedef Eigen::Matrix<double, 3, 1> DvlEstimationMatrix;
 
 namespace proc_navigation {
 
@@ -50,18 +48,18 @@ class ExtendedKalmanFilter {
 
     //==========================================================================
     //  P U B L I C   M E T H O D S
-    void update_dvl(tf::Vector3 measurement, tf::Vector3 &estimation);
-    void update_imu(tf::Quaternion measurement, tf::Quaternion &estimation);
+    void update_dvl(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation);
+    void update_imu(Eigen::Quaterniond &measurement, Eigen::Quaterniond &estimation);
 
     void initialization(float pval, float qval, float rval);
 
     private:
     //==========================================================================
     //  P R I V A T E   M E T H O D S
-    DvlEstimationMatrix dvl_tf_to_eigen(tf::Vector3 measurement);
-    ImuEstimationMatrix imu_tf_to_eigen(tf::Quaternion measurement);
-    tf::Quaternion imu_eigen_to_tf(ImuEstimationMatrix estimation);
-    tf::Vector3 dvl_eigen_to_tf(DvlEstimationMatrix estimation);
+    DvlEstimationMatrix dvl_tf_to_eigen(Eigen::Vector3d measurement);
+    ImuEstimationMatrix imu_tf_to_eigen(Eigen::Quaterniond measurement);
+    Eigen::Quaterniond  imu_eigen_to_tf(ImuEstimationMatrix estimation);
+    Eigen::Vector3d     dvl_eigen_to_tf(DvlEstimationMatrix estimation);
 
     //==========================================================================
     //  P R I V A T E   M E M B E R S
