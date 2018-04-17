@@ -25,16 +25,16 @@ namespace proc_navigation {
     //
     void DvlData::DvlTwistCallback(geometry_msgs::TwistStamped msg)
     {
-      dvl_twist_ = msg;
-      SetNewDataReady();
+        dvl_twist_ = msg;
+        SetNewDataReady();
     }
 
     //------------------------------------------------------------------------------
     //
     void DvlData::DvlPressureCallback(sensor_msgs::FluidPressure msg)
     {
-      dvl_pressure_ = msg;
-      SetNewDataReady();
+        dvl_pressure_ = msg;
+        SetNewDataReady();
     }
 
     //------------------------------------------------------------------------------

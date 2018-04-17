@@ -34,23 +34,23 @@
 	//
 	ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh), quaternion_(0.0, 0.0, 0.0, 0.0)
     {
-		dvl_twist_subscriber_ = nh_->subscribe("/provider_dvl/dvl_twist", 100,
+		dvlTwistSubscriber_ = nh_->subscribe("/provider_dvl/dvl_twist", 100,
 												 &DvlData::DvlTwistCallback, &dvlData_);
 
-		dvl_pressure_subscriber_ = nh_->subscribe("/provider_dvl/dvl_pressure", 100,
+		dvlPressureSubscriber_ = nh_->subscribe("/provider_dvl/dvl_pressure", 100,
 												 &DvlData::DvlPressureCallback, &dvlData_);
 
-		imu_subscriber_ = nh_->subscribe("/provider_imu/imu", 100,
+		imuSubscriber_ = nh_->subscribe("/provider_imu/imu", 100,
 												 &IMUData::IMUMsgCallback, &imuData_);
 
-		navigation_depth_offset_server_ = nh_->advertiseService("/proc_navigation/set_depth_offset",
+		navigationDepthOffsetServer_ = nh_->advertiseService("/proc_navigation/set_depth_offset",
 									 &ProcNavigationNode::SetDepthOffsetCallback, this);
 
-		navigation_xy_offset_server_ = nh_->advertiseService("/proc_navigation/set_world_x_y_offset",
+		navigationXYOffsetServer_ = nh_->advertiseService("/proc_navigation/set_world_x_y_offset",
 										&ProcNavigationNode::SetWorldXYOffsetCallback, this);
 
 
-		navigation_odom_publisher_ = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
+		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
 
 	    position_          = Eigen::Vector3d::Zero();
 	    incrementPosition_ = Eigen::Vector3d::Zero();
@@ -63,7 +63,14 @@
 
 	//-----------------------------------------------------------------------------
 	//
-	ProcNavigationNode::~ProcNavigationNode() { }
+	ProcNavigationNode::~ProcNavigationNode()
+    {
+      dvlTwistSubscriber_.shutdown();
+      dvlPressureSubscriber_.shutdown();
+      imuSubscriber_.shutdown();
+      navigationDepthOffsetServer_.shutdown();
+      navigationXYOffsetServer_.shutdown();
+    }
 
 	//==============================================================================
 	// M E T H O D   S E C T I O N
@@ -75,7 +82,7 @@
 		ros::Rate r(100); // 100 hz
 		while(ros::ok()) {
 			ros::spinOnce();
-			PublishData();
+            ProcessCartesianPose();
 			r.sleep();
 		}
 	}
@@ -99,23 +106,19 @@
 
 	//-----------------------------------------------------------------------------
 	//
-	void ProcNavigationNode::PublishData()
+	void ProcNavigationNode::ProcessCartesianPose()
 	{
 		if (dvlData_.IsNewDataReady() || imuData_.IsNewDataReady())
 		{
 			  dvlData_.SetNewDataUsed();
 			  imuData_.SetNewDataUsed();
 
-			  nav_msgs::Odometry odometry_msg;
-			  odometry_msg.header.frame_id = "NED";
-			  odometry_msg.header.stamp = ros::Time::now();
-
 			  incrementPosition_ = dvlData_.GetPositionXYZ();
 			  positionFromDepth_ = dvlData_.GetPositionZFromPressure();
 			  velocity_          = dvlData_.GetVelocityXYZ();
 			  angularVelocity_   = imuData_.GetAngularVelocity();
-			  eulerAngel_ = imuData_.GetOrientation();
-			  quaternion_ = imuData_.GetQuaternion();
+			  eulerAngel_        = imuData_.GetOrientation();
+			  quaternion_        = imuData_.GetQuaternion();
 
 			  Eigen::Affine3d transform;
 
@@ -124,13 +127,23 @@
 			  position_ += transform.linear() * incrementPosition_;
 
 			  position_.z() = positionFromDepth_ - zOffset_;
-
-			  FillPoseMsg(position_, eulerAngel_, odometry_msg);
-			  FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
-
-			  navigation_odom_publisher_.publish(odometry_msg);
+          
+              PublishData();
 		}
 	}
+    //-----------------------------------------------------------------------------
+    //
+    void ProcNavigationNode::PublishData()
+    {
+        nav_msgs::Odometry odometry_msg;
+        odometry_msg.header.frame_id = "NED";
+        odometry_msg.header.stamp = ros::Time::now();
+
+        FillPoseMsg(position_, eulerAngel_, odometry_msg);
+        FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
+
+        navigationOdomPublisher_.publish(odometry_msg);
+    }
 
 	//-----------------------------------------------------------------------------
 	//

@@ -29,8 +29,6 @@
 #include <ros/ros.h>
 #include <memory>
 #include <eigen3/Eigen/Geometry>
-#include <tf/LinearMath/Matrix3x3.h>
-#include <tf/tf.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <sensor_msgs/FluidPressure.h>
@@ -60,8 +58,8 @@ namespace proc_navigation {
         // P U B L I C   M E T H O D S
 
         void Spin();
+        void ProcessCartesianPose();
         void PublishData();
-        double DegreeToRadian(const double &degree);
 
     private:
         //==========================================================================
@@ -78,14 +76,14 @@ namespace proc_navigation {
 
         ros::NodeHandlePtr nh_;
 
-        ros::Subscriber dvl_twist_subscriber_;
-        ros::Subscriber dvl_pressure_subscriber_;
-        ros::Subscriber imu_subscriber_;
+        ros::Subscriber dvlTwistSubscriber_;
+        ros::Subscriber dvlPressureSubscriber_;
+        ros::Subscriber imuSubscriber_;
 
-        ros::Publisher navigation_odom_publisher_;
+        ros::Publisher  navigationOdomPublisher_;
 
-        ros::ServiceServer navigation_depth_offset_server_;
-        ros::ServiceServer navigation_xy_offset_server_;
+        ros::ServiceServer navigationDepthOffsetServer_;
+        ros::ServiceServer navigationXYOffsetServer_;
 
 
 
@@ -102,11 +100,7 @@ namespace proc_navigation {
         Eigen::Vector3d    angularVelocity_;
         Eigen::Vector3d    eulerAngel_;
 
-};
-
-inline double ProcNavigationNode::DegreeToRadian(const double &degree) {
-  return degree * DegreeToRad;
-}
+    };
 
 }
 #endif  // PROC_NAVIGATION_NAVIGATION_NODE_H_
