@@ -12,7 +12,25 @@ namespace proc_navigation {
 
     //------------------------------------------------------------------------------
     //
-    DvlData::DvlData() : last_timestamp_(ros::Time::now()) { }
+    DvlData::DvlData(IntegrationMethodType integrationMethodType) :
+            last_timestamp_(ros::Time::now())
+    {
+        positionIncrement_        = Eigen::Vector3d::Zero();
+        historyPositionIncrement_ = Eigen::MatrixXd::Zero(3, 4);
+
+        switch (integrationMethodType)
+        {
+            case StdMethod :
+                integrationMethod_ = &DvlData::StdIntegrationMethod;
+                break;
+            case RKMethod  :
+                integrationMethod_ = &DvlData::RKIntegrationMethod;
+                break;
+            default :
+                integrationMethod_ = &DvlData::StdIntegrationMethod;
+                break;
+        }
+    }
 
     //------------------------------------------------------------------------------
     //
@@ -39,21 +57,34 @@ namespace proc_navigation {
 
     //------------------------------------------------------------------------------
     //
-    //
     Eigen::Vector3d DvlData::GetPositionXYZ()
     {
-        Eigen::Vector3d position;
         ros::Duration dt = ros::Time::now() - last_timestamp_;
         double dt_sec = dt.toSec();
 
-        position << dvl_twist_.twist.linear.x * dt_sec, dvl_twist_.twist.linear.y * dt_sec, dvl_twist_.twist.linear.z * dt_sec;
+        (this->*integrationMethod_)(dt_sec);
 
         last_timestamp_ = ros::Time::now();
 
-        return position;
+        return positionIncrement_;
     }
 
+    //------------------------------------------------------------------------------
+    //
+    void DvlData::StdIntegrationMethod(const double &dt_sec)
+    {
+        positionIncrement_ << dvl_twist_.twist.linear.x * dt_sec, dvl_twist_.twist.linear.y * dt_sec, dvl_twist_.twist.linear.z * dt_sec;
+    }
 
+    //------------------------------------------------------------------------------
+    //
+    void DvlData::RKIntegrationMethod(const double &dt_sec)
+    {
+        positionIncrement_ << dvl_twist_.twist.linear.x * dt_sec, dvl_twist_.twist.linear.y * dt_sec, dvl_twist_.twist.linear.z * dt_sec;
+        historyPositionIncrement_.block<3,3>(0, 1) = historyPositionIncrement_.block<3,3>(0, 0);
+        historyPositionIncrement_.col(0) = positionIncrement_;
+        positionIncrement_ = (1.0 / 6.0) * (historyPositionIncrement_.col(0) + 2 * historyPositionIncrement_.col(1) + 2 * historyPositionIncrement_.col(2) + historyPositionIncrement_.col(3));
+    }
 
     //------------------------------------------------------------------------------
     //
@@ -75,7 +106,7 @@ namespace proc_navigation {
     //
     double DvlData::GetPositionZFromPressure()
     {
-        return dvl_pressure_.fluid_pressure * barToMeterOfWater;
+        return dvl_pressure_.fluid_pressure * BAR_TO_METER_OF_WATER;
     }
 
 }
