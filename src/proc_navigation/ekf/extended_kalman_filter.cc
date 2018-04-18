@@ -146,7 +146,7 @@ namespace proc_navigation {
 
         Eigen::Vector3d convert_eigen;
 
-        convert_eigen << estimation(0,0), estimation(0,1), estimation(0,2);
+        convert_eigen << estimation(0,0), estimation(1,0), estimation(2,0);
 
         return convert_eigen;
     }

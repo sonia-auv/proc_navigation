@@ -129,6 +129,8 @@
 
 		    position_.z() = positionFromDepth_ - zOffset_;
 
+            dvlFilter_.update_dvl(position_, positionEstimation_);
+
             PublishData();
 		}
 	}
@@ -140,7 +142,7 @@
         odometry_msg.header.frame_id = "NED";
         odometry_msg.header.stamp = ros::Time::now();
 
-        FillPoseMsg(position_, eulerAngel_, odometry_msg);
+        FillPoseMsg(positionEstimation_, eulerAngel_, odometry_msg);
         FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
 
         navigationOdomPublisher_.publish(odometry_msg);

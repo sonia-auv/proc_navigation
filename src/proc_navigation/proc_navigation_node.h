@@ -83,10 +83,13 @@ namespace proc_navigation {
         ros::ServiceServer navigationDepthOffsetServer_;
         ros::ServiceServer navigationXYOffsetServer_;
 
-
-
         DvlData dvlData_;
         IMUData imuData_;
+
+        ExtendedKalmanFilter dvlFilter_;
+        ExtendedKalmanFilter imuFilter_;
+        Eigen::Vector3d      positionEstimation_;
+        Eigen::Quaterniond   orientationEstimation_;
 
         double zOffset_;
         double positionFromDepth_;
