@@ -111,25 +111,25 @@
 	{
 		if (dvlData_.IsNewDataReady() || imuData_.IsNewDataReady())
 		{
-			  dvlData_.SetNewDataUsed();
-			  imuData_.SetNewDataUsed();
+		    dvlData_.SetNewDataUsed();
+		    imuData_.SetNewDataUsed();
 
-			  incrementPosition_ = dvlData_.GetPositionXYZ();
-			  positionFromDepth_ = dvlData_.GetPositionZFromPressure();
-			  velocity_          = dvlData_.GetVelocityXYZ();
-			  angularVelocity_   = imuData_.GetAngularVelocity();
-			  eulerAngel_        = imuData_.GetOrientation();
-			  quaternion_        = imuData_.GetQuaternion();
+		    incrementPosition_ = dvlData_.GetPositionXYZ();
+		    positionFromDepth_ = dvlData_.GetPositionZFromPressure();
+		    velocity_          = dvlData_.GetVelocityXYZ();
+		    angularVelocity_   = imuData_.GetAngularVelocity();
+		    eulerAngel_        = imuData_.GetOrientation();
+		    quaternion_        = imuData_.GetQuaternion();
 
-			  Eigen::Affine3d transform;
+		    Eigen::Affine3d transform;
 
-			  transform.linear() = quaternion_.toRotationMatrix();
+		    transform.linear() = quaternion_.toRotationMatrix();
 
-			  position_ += transform.linear() * incrementPosition_;
+		    position_ += transform.linear() * incrementPosition_;
 
-			  position_.z() = positionFromDepth_ - zOffset_;
-          
-              PublishData();
+		    position_.z() = positionFromDepth_ - zOffset_;
+
+            PublishData();
 		}
 	}
     //-----------------------------------------------------------------------------
