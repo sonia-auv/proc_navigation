@@ -43,12 +43,8 @@ void IMUData::IMUMsgCallback(sensor_msgs::Imu msg) {
   double m12 = 2 * (q1*q2 + q0*q3);
   double m13 = 2 * (q1*q3 - q0*q2);
 
-  double m21 = 2 * (q1*q2 - q0*q3);
-  double m22 = 2 * (q0*q0 - 0.5 + q2*q2);
   double m23 = 2 * (q2*q3 + q0*q1);
-
-  double m31 = 2 * (q1*q3 + q0*q2);
-  double m32 = 2 * (q2*q3 - q0*q1);
+  
   double m33 = 2 * (q0*q0 - 0.5 + q3*q3);
 
 //  std::cout << m11 << "," << m12 << "," << m13 << "," << m21 << ","<< m22 << ","<< m23 << "," << m31 << ","<< m32 << ","<< m33 << std::endl;
