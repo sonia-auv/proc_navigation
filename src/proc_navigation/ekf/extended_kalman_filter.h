@@ -48,34 +48,34 @@ class ExtendedKalmanFilter {
 
     //==========================================================================
     //  P U B L I C   M E T H O D S
-    void update_dvl(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation);
-    void update_imu(Eigen::Quaterniond &measurement, Eigen::Quaterniond &estimation);
+    void UpdateDvl(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation);
+    void UpdateImu(Eigen::Quaterniond &measurement, Eigen::Quaterniond &estimation);
 
-    void initialization(float pval, float qval, float rval);
+    void Initialization(float pval, float qval, float rval);
 
     private:
     //==========================================================================
     //  P R I V A T E   M E T H O D S
-    DvlEstimationMatrix dvl_tf_to_eigen(Eigen::Vector3d measurement);
-    ImuEstimationMatrix imu_tf_to_eigen(Eigen::Quaterniond measurement);
-    Eigen::Quaterniond  imu_eigen_to_tf(ImuEstimationMatrix estimation);
-    Eigen::Vector3d     dvl_eigen_to_tf(DvlEstimationMatrix estimation);
+    DvlEstimationMatrix DvlVectorToMatrix(Eigen::Vector3d measurement);
+    ImuEstimationMatrix ImuVectorToMatrix(Eigen::Quaterniond measurement);
+    Eigen::Quaterniond  ImuMatrixToVector(ImuEstimationMatrix estimation);
+    Eigen::Vector3d     DvlMatrixToVector(DvlEstimationMatrix estimation);
 
     //==========================================================================
     //  P R I V A T E   M E M B E R S
-    ImuMatrix imu_previous_noise_;
-    ImuMatrix imu_post_noise_;
-    ImuMatrix imu_jacobians_transition_;
-    ImuMatrix imu_jacobians_measurement_;
-    ImuMatrix imu_process_noise_;
-    ImuMatrix imu_measurement_noise_;
+    ImuMatrix imuPreviousNoise_;
+    ImuMatrix imuPostNoise_;
+    ImuMatrix imuJacobiansTransition_;
+    ImuMatrix imuJacobiansMeasurement_;
+    ImuMatrix imuProcessNoise_;
+    ImuMatrix imuMeasurementNoise_;
 
-    DvlMatrix dvl_previous_noise_;       
-    DvlMatrix dvl_post_noise_;
-    DvlMatrix dvl_jacobians_transition_;
-    DvlMatrix dvl_jacobians_measurement_;
-    DvlMatrix dvl_process_noise_;
-    DvlMatrix dvl_measurement_noise_;
+    DvlMatrix dvlPreviousNoise_;
+    DvlMatrix dvlPostNoise_;
+    DvlMatrix dvlJacobiansTransition_;
+    DvlMatrix dvlJacobiansMeasurement_;
+    DvlMatrix dvlProcessNoise_;
+    DvlMatrix dvlMeasurementNoise_;
 
 };
 

@@ -129,7 +129,7 @@
 
 		    position_.z() = positionFromDepth_ - zOffset_;
 
-            dvlFilter_.update_dvl(position_, positionEstimation_);
+            dvlFilter_.UpdateDvl(position_, positionEstimation_);
 
             PublishData();
 		}

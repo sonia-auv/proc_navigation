@@ -34,7 +34,7 @@ namespace proc_navigation {
 //
     ExtendedKalmanFilter::ExtendedKalmanFilter() {
 
-        initialization(0.1, 1^-4, 0.1);
+        Initialization(0.1, 1 ^ -4, 0.1);
 
     }
 
@@ -44,75 +44,73 @@ namespace proc_navigation {
 
 //==============================================================================
 //  M E T H O D   S E C T I O N
-    void ExtendedKalmanFilter::initialization(float pval, float qval, float rval) {
+    void ExtendedKalmanFilter::Initialization(float pval, float qval, float rval) {
 
-        imu_previous_noise_.setIdentity();
-        imu_post_noise_.setIdentity();
-        imu_jacobians_transition_.setIdentity();
-        imu_jacobians_measurement_.setIdentity();
-        imu_process_noise_.setIdentity();
-        imu_measurement_noise_.setIdentity();
+        imuPreviousNoise_.setIdentity();
+        imuPostNoise_.setIdentity();
+        imuJacobiansTransition_.setIdentity();
+        imuJacobiansMeasurement_.setIdentity();
+        imuProcessNoise_.setIdentity();
+        imuMeasurementNoise_.setIdentity();
 
-        dvl_previous_noise_.setIdentity();
-        dvl_post_noise_.setIdentity();
-        dvl_jacobians_transition_.setIdentity();
-        dvl_jacobians_measurement_.setIdentity();
-        dvl_process_noise_.setIdentity();
-        dvl_measurement_noise_.setIdentity();
+        dvlPreviousNoise_.setIdentity();
+        dvlPostNoise_.setIdentity();
+        dvlJacobiansTransition_.setIdentity();
+        dvlJacobiansMeasurement_.setIdentity();
+        dvlProcessNoise_.setIdentity();
+        dvlMeasurementNoise_.setIdentity();
 
-        imu_previous_noise_    *= 0;
-        imu_previous_noise_    *= pval;
-        imu_process_noise_     *= qval;
-        imu_measurement_noise_ *= rval;
+        imuPreviousNoise_    *= pval;
+        imuProcessNoise_     *= qval;
+        imuMeasurementNoise_ *= rval;
 
-        dvl_previous_noise_    *= 0;
-        dvl_previous_noise_    *= pval;
-        dvl_process_noise_     *= qval;
-        dvl_measurement_noise_ *= rval;
+        dvlPreviousNoise_    *= pval;
+        dvlProcessNoise_     *= qval;
+        dvlMeasurementNoise_ *= rval;
 
     }
 
 
-    void ExtendedKalmanFilter::update_dvl(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation){
+    void ExtendedKalmanFilter::UpdateDvl(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation){
 
         DvlMatrix inverse_matrix, gain;
-        DvlEstimationMatrix estimation_matrix = dvl_tf_to_eigen(measurement);
+        DvlEstimationMatrix estimation_matrix = DvlVectorToMatrix(measurement);
 
-        dvl_previous_noise_ = dvl_jacobians_transition_ * dvl_post_noise_ * dvl_jacobians_transition_ + dvl_process_noise_;
+        dvlPreviousNoise_ = dvlJacobiansTransition_ * dvlPostNoise_ * dvlJacobiansTransition_ + dvlProcessNoise_;
 
-        inverse_matrix = dvl_jacobians_measurement_ * dvl_previous_noise_ * dvl_jacobians_measurement_ + dvl_measurement_noise_;
+        inverse_matrix = dvlJacobiansMeasurement_ * dvlPreviousNoise_ * dvlJacobiansMeasurement_ + dvlMeasurementNoise_;
 
         inverse_matrix.inverse();
 
-        gain = dvl_previous_noise_ * dvl_jacobians_measurement_ * inverse_matrix;
+        gain = dvlPreviousNoise_ * dvlJacobiansMeasurement_ * inverse_matrix;
 
-        estimation_matrix += gain * (dvl_tf_to_eigen(measurement) - estimation_matrix);
+        estimation_matrix += gain * (DvlVectorToMatrix(measurement) - estimation_matrix);
 
-        estimation = dvl_eigen_to_tf(estimation_matrix);
+        estimation = DvlMatrixToVector(estimation_matrix);
 
     }
 
-    void ExtendedKalmanFilter::update_imu(Eigen::Quaterniond &measurement, Eigen::Quaterniond &estimation){
+    void ExtendedKalmanFilter::UpdateImu(Eigen::Quaterniond &measurement, Eigen::Quaterniond &estimation){
 
         ImuMatrix inverse_matrix, gain;
-        ImuEstimationMatrix estimation_matrix = imu_tf_to_eigen(measurement);
+        ImuEstimationMatrix estimation_matrix = ImuVectorToMatrix(measurement);
 
-        imu_previous_noise_ = imu_jacobians_transition_ * imu_post_noise_ * imu_jacobians_transition_ + imu_process_noise_;
+        imuPreviousNoise_ = imuJacobiansTransition_ * imuPostNoise_ * imuJacobiansTransition_ + imuProcessNoise_;
 
-        inverse_matrix = imu_jacobians_measurement_ * imu_previous_noise_ * imu_jacobians_measurement_ + imu_measurement_noise_;
+        inverse_matrix = imuJacobiansMeasurement_ * imuPreviousNoise_ * imuJacobiansMeasurement_ + imuMeasurementNoise_;
 
         inverse_matrix.inverse();
 
-        gain = imu_previous_noise_ * imu_jacobians_measurement_ * inverse_matrix;
+        gain = imuPreviousNoise_ * imuJacobiansMeasurement_ * inverse_matrix;
 
-        estimation_matrix += gain * (imu_tf_to_eigen(measurement) - estimation_matrix);
+        estimation_matrix += gain * (ImuVectorToMatrix(measurement) - estimation_matrix);
 
-        estimation = imu_eigen_to_tf(estimation_matrix);
+        estimation = ImuMatrixToVector(estimation_matrix);
 
     }
 
 
-    DvlEstimationMatrix ExtendedKalmanFilter::dvl_tf_to_eigen(Eigen::Vector3d measurement){
+    DvlEstimationMatrix ExtendedKalmanFilter::DvlVectorToMatrix(Eigen::Vector3d measurement){
 
         DvlEstimationMatrix convert_tf;
 
@@ -123,7 +121,7 @@ namespace proc_navigation {
         return convert_tf;
     }
 
-    ImuEstimationMatrix ExtendedKalmanFilter::imu_tf_to_eigen(Eigen::Quaterniond measurement){
+    ImuEstimationMatrix ExtendedKalmanFilter::ImuVectorToMatrix(Eigen::Quaterniond measurement){
 
         ImuEstimationMatrix convert_tf;
 
@@ -135,14 +133,14 @@ namespace proc_navigation {
         return convert_tf;
     }
 
-    Eigen::Quaterniond ExtendedKalmanFilter::imu_eigen_to_tf(ImuEstimationMatrix estimation){
+    Eigen::Quaterniond ExtendedKalmanFilter::ImuMatrixToVector(ImuEstimationMatrix estimation){
 
         Eigen::Quaterniond convert_eigen(estimation(0,0), estimation(1,0), estimation(2,0), estimation(3,0));
 
         return convert_eigen;
     }
 
-    Eigen::Vector3d ExtendedKalmanFilter::dvl_eigen_to_tf(DvlEstimationMatrix estimation){
+    Eigen::Vector3d ExtendedKalmanFilter::DvlMatrixToVector(DvlEstimationMatrix estimation){
 
         Eigen::Vector3d convert_eigen;
 
