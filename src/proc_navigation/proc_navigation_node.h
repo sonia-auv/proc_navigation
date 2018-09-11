@@ -87,9 +87,7 @@ namespace proc_navigation {
         IMUData imuData_;
 
         ExtendedKalmanFilter dvlFilter_;
-        ExtendedKalmanFilter imuFilter_;
-        Eigen::Vector3d      positionEstimation_;
-        Eigen::Quaterniond   orientationEstimation_;
+        Eigen::Vector3d      poseEstimation_;
 
         double zOffset_;
         double positionFromDepth_;

@@ -32,121 +32,45 @@ namespace proc_navigation {
 
 //-----------------------------------------------------------------------------
 //
-    ExtendedKalmanFilter::ExtendedKalmanFilter() {
-
+    ExtendedKalmanFilter::ExtendedKalmanFilter()
+    {
         Initialization(0.1, 1 ^ -4, 0.1);
-
     }
-
-//-----------------------------------------------------------------------------
-//
-    ExtendedKalmanFilter::~ExtendedKalmanFilter() { }
 
 //==============================================================================
 //  M E T H O D   S E C T I O N
-    void ExtendedKalmanFilter::Initialization(float pval, float qval, float rval) {
+    void ExtendedKalmanFilter::Initialization(float pval, float qval, float rval)
+    {
+        previousNoise_.setIdentity();
+        postNoise_.setIdentity();
+        jacobiansTransition_.setIdentity();
+        jacobiansMeasurement_.setIdentity();
+        processNoise_.setIdentity();
+        measurementNoise_.setIdentity();
 
-        imuPreviousNoise_.setIdentity();
-        imuPostNoise_.setIdentity();
-        imuJacobiansTransition_.setIdentity();
-        imuJacobiansMeasurement_.setIdentity();
-        imuProcessNoise_.setIdentity();
-        imuMeasurementNoise_.setIdentity();
-
-        dvlPreviousNoise_.setIdentity();
-        dvlPostNoise_.setIdentity();
-        dvlJacobiansTransition_.setIdentity();
-        dvlJacobiansMeasurement_.setIdentity();
-        dvlProcessNoise_.setIdentity();
-        dvlMeasurementNoise_.setIdentity();
-
-        imuPreviousNoise_    *= pval;
-        imuProcessNoise_     *= qval;
-        imuMeasurementNoise_ *= rval;
-
-        dvlPreviousNoise_    *= pval;
-        dvlProcessNoise_     *= qval;
-        dvlMeasurementNoise_ *= rval;
-
+        previousNoise_    *= pval;
+        processNoise_     *= qval;
+        measurementNoise_ *= rval;
     }
 
 
-    void ExtendedKalmanFilter::UpdateDvl(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation){
+    void ExtendedKalmanFilter::Update(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation)
+    {
+        Eigen::Matrix3d inverse_matrix;
+        Eigen::Matrix3d gain;
+        Eigen::Vector3d stateEstimation = measurement;
 
-        DvlMatrix inverse_matrix, gain;
-        DvlEstimationMatrix estimation_matrix = DvlVectorToMatrix(measurement);
+        previousNoise_ = jacobiansTransition_ * postNoise_ * jacobiansTransition_ + processNoise_;
 
-        dvlPreviousNoise_ = dvlJacobiansTransition_ * dvlPostNoise_ * dvlJacobiansTransition_ + dvlProcessNoise_;
-
-        inverse_matrix = dvlJacobiansMeasurement_ * dvlPreviousNoise_ * dvlJacobiansMeasurement_ + dvlMeasurementNoise_;
+        inverse_matrix = jacobiansMeasurement_ * previousNoise_ * jacobiansMeasurement_ + measurementNoise_;
 
         inverse_matrix.inverse();
 
-        gain = dvlPreviousNoise_ * dvlJacobiansMeasurement_ * inverse_matrix;
+        gain = previousNoise_ * jacobiansMeasurement_ * inverse_matrix;
 
-        estimation_matrix += gain * (DvlVectorToMatrix(measurement) - estimation_matrix);
+        stateEstimation += gain * (measurement - stateEstimation);
 
-        estimation = DvlMatrixToVector(estimation_matrix);
-
-    }
-
-    void ExtendedKalmanFilter::UpdateImu(Eigen::Quaterniond &measurement, Eigen::Quaterniond &estimation){
-
-        ImuMatrix inverse_matrix, gain;
-        ImuEstimationMatrix estimation_matrix = ImuVectorToMatrix(measurement);
-
-        imuPreviousNoise_ = imuJacobiansTransition_ * imuPostNoise_ * imuJacobiansTransition_ + imuProcessNoise_;
-
-        inverse_matrix = imuJacobiansMeasurement_ * imuPreviousNoise_ * imuJacobiansMeasurement_ + imuMeasurementNoise_;
-
-        inverse_matrix.inverse();
-
-        gain = imuPreviousNoise_ * imuJacobiansMeasurement_ * inverse_matrix;
-
-        estimation_matrix += gain * (ImuVectorToMatrix(measurement) - estimation_matrix);
-
-        estimation = ImuMatrixToVector(estimation_matrix);
-
-    }
-
-
-    DvlEstimationMatrix ExtendedKalmanFilter::DvlVectorToMatrix(Eigen::Vector3d measurement){
-
-        DvlEstimationMatrix convert_tf;
-
-        convert_tf(0,0) = measurement(0);
-        convert_tf(1,0) = measurement(1);
-        convert_tf(2,0) = measurement(2);
-
-        return convert_tf;
-    }
-
-    ImuEstimationMatrix ExtendedKalmanFilter::ImuVectorToMatrix(Eigen::Quaterniond measurement){
-
-        ImuEstimationMatrix convert_tf;
-
-        convert_tf(0,0) = measurement.x();
-        convert_tf(1,0) = measurement.y();
-        convert_tf(2,0) = measurement.z();
-        convert_tf(3,0) = measurement.w();
-
-        return convert_tf;
-    }
-
-    Eigen::Quaterniond ExtendedKalmanFilter::ImuMatrixToVector(ImuEstimationMatrix estimation){
-
-        Eigen::Quaterniond convert_eigen(estimation(0,0), estimation(1,0), estimation(2,0), estimation(3,0));
-
-        return convert_eigen;
-    }
-
-    Eigen::Vector3d ExtendedKalmanFilter::DvlMatrixToVector(DvlEstimationMatrix estimation){
-
-        Eigen::Vector3d convert_eigen;
-
-        convert_eigen << estimation(0,0), estimation(1,0), estimation(2,0);
-
-        return convert_eigen;
+        estimation = stateEstimation;
     }
 
 //-----------------------------------------------------------------------------

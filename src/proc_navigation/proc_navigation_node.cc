@@ -58,7 +58,6 @@
 	    angularVelocity_   = Eigen::Vector3d::Zero();
 	    eulerAngel_        = Eigen::Vector3d::Zero();
 
-
 	}
 
 	//-----------------------------------------------------------------------------
@@ -121,15 +120,11 @@
 		    eulerAngel_        = imuData_.GetOrientation();
 		    quaternion_        = imuData_.GetQuaternion();
 
-		    Eigen::Affine3d transform;
-
-		    transform.linear() = quaternion_.toRotationMatrix();
-
-		    position_ += transform.linear() * incrementPosition_;
+		    position_ += quaternion_.toRotationMatrix() * incrementPosition_;
 
 		    position_.z() = positionFromDepth_ - zOffset_;
 
-            dvlFilter_.UpdateDvl(position_, positionEstimation_);
+            dvlFilter_.Update(position_, poseEstimation_);
 
             PublishData();
 		}
@@ -142,7 +137,7 @@
         odometry_msg.header.frame_id = "NED";
         odometry_msg.header.stamp = ros::Time::now();
 
-        FillPoseMsg(positionEstimation_, eulerAngel_, odometry_msg);
+        FillPoseMsg(poseEstimation_, eulerAngel_, odometry_msg);
         FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
 
         navigationOdomPublisher_.publish(odometry_msg);

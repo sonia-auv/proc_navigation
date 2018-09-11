@@ -31,54 +31,33 @@
 #include <eigen3/Eigen/Geometry>
 
 typedef Eigen::Matrix<double, 3, 3> DvlMatrix;
-typedef Eigen::Matrix<double, 4, 4> ImuMatrix;
-typedef Eigen::Matrix<double, 4, 1> ImuEstimationMatrix;
 typedef Eigen::Matrix<double, 3, 1> DvlEstimationMatrix;
 
-namespace proc_navigation {
-
-class ExtendedKalmanFilter {
-
+namespace proc_navigation
+{
+    class ExtendedKalmanFilter
+    {
     public:
-    //==========================================================================
-    //  P U B L I C   C / D T O R S
-    ExtendedKalmanFilter();
-    ~ExtendedKalmanFilter();
+        //==========================================================================
+        //  P U B L I C   C / D T O R S
+        ExtendedKalmanFilter();
+        ~ExtendedKalmanFilter() = default;
 
+        //==========================================================================
+        //  P U B L I C   M E T H O D S
+        void Update(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation);
 
-    //==========================================================================
-    //  P U B L I C   M E T H O D S
-    void UpdateDvl(Eigen::Vector3d &measurement, Eigen::Vector3d &estimation);
-    void UpdateImu(Eigen::Quaterniond &measurement, Eigen::Quaterniond &estimation);
-
-    void Initialization(float pval, float qval, float rval);
+        void Initialization(float pval, float qval, float rval);
 
     private:
-    //==========================================================================
-    //  P R I V A T E   M E T H O D S
-    DvlEstimationMatrix DvlVectorToMatrix(Eigen::Vector3d measurement);
-    ImuEstimationMatrix ImuVectorToMatrix(Eigen::Quaterniond measurement);
-    Eigen::Quaterniond  ImuMatrixToVector(ImuEstimationMatrix estimation);
-    Eigen::Vector3d     DvlMatrixToVector(DvlEstimationMatrix estimation);
-
-    //==========================================================================
-    //  P R I V A T E   M E M B E R S
-    ImuMatrix imuPreviousNoise_;
-    ImuMatrix imuPostNoise_;
-    ImuMatrix imuJacobiansTransition_;
-    ImuMatrix imuJacobiansMeasurement_;
-    ImuMatrix imuProcessNoise_;
-    ImuMatrix imuMeasurementNoise_;
-
-    DvlMatrix dvlPreviousNoise_;
-    DvlMatrix dvlPostNoise_;
-    DvlMatrix dvlJacobiansTransition_;
-    DvlMatrix dvlJacobiansMeasurement_;
-    DvlMatrix dvlProcessNoise_;
-    DvlMatrix dvlMeasurementNoise_;
-
-};
-
-
+        //==========================================================================
+        //  P R I V A T E   M E M B E R S
+        Eigen::Matrix3d previousNoise_;
+        Eigen::Matrix3d postNoise_;
+        Eigen::Matrix3d jacobiansTransition_;
+        Eigen::Matrix3d jacobiansMeasurement_;
+        Eigen::Matrix3d processNoise_;
+        Eigen::Matrix3d measurementNoise_;
+    };
 }
 #endif  // Extended_Kalman_Filter_H_
