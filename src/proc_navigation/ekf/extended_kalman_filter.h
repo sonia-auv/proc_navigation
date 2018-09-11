@@ -30,9 +30,6 @@
 #include <memory>
 #include <eigen3/Eigen/Geometry>
 
-typedef Eigen::Matrix<double, 3, 3> DvlMatrix;
-typedef Eigen::Matrix<double, 3, 1> DvlEstimationMatrix;
-
 namespace proc_navigation
 {
     class ExtendedKalmanFilter

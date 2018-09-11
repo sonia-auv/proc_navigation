@@ -1,5 +1,5 @@
 /**
- * \file	navigation.cc
+ * \file	proc_navigation_node.cc
  * \author	Etienne Boudreault-Pilon <etienne.b.pilon@gmail.com>
  * \date	24/01/2016
  *

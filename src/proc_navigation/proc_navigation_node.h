@@ -1,5 +1,5 @@
 /**
- * \file	navigation_node.h
+ * \file	proc_navigation_node.h
  * \author	Etienne Boudreault-Pilon <etienne.b.pilon@gmail.com>
  * \date	24/01/2016
  *
