@@ -66,7 +66,7 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 * **Etienne Boudreault-Pilon** - *Initial work* - [etiennepilon](https://github.com/etiennepilon)
 * **Jérémie St-Jules Prévôt** - *Initial work* - [jsprevost](https://github.com/jsprevost)
 
-###contributors
+### Contributors
 * **Francis Massé** - [fmassey](https://github.com/fmassey)
 * **Olivier Lavoie** - [olavoie](https://github.com/olavoie)
 
