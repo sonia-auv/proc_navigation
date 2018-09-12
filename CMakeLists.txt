@@ -42,6 +42,8 @@ set(proc_navigation_SRC_DIR "src")
 #===============================================================================
 # C A T K I N   C O N F I G U R A T I O N
 
+find_package(PkgConfig)
+
 find_package(
     catkin REQUIRED COMPONENTS
     roscpp
@@ -51,11 +53,6 @@ find_package(
     sensor_msgs
     tf
 )
-
-#add_message_files(
-#    DIRECTORY msg
-#    FILES
-#)
 
 add_service_files(
         DIRECTORY srv
@@ -96,7 +93,9 @@ include_directories(
 # C R E A T E   E X E C U T A B L E
 
 add_executable(${PROJECT_NAME}_node ${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc ${proc_navigation_FILES})
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_node
+                      ${catkin_LIBRARIES}
+                      ${BFL_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_generate_messages_cpp)
 
 #==========================================================================

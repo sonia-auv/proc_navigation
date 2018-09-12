@@ -1,5 +1,5 @@
 /**
- * \file	navigation_node.h
+ * \file	proc_navigation_node.h
  * \author	Etienne Boudreault-Pilon <etienne.b.pilon@gmail.com>
  * \date	24/01/2016
  *
@@ -29,7 +29,6 @@
 #include <ros/ros.h>
 #include <memory>
 #include <eigen3/Eigen/Geometry>
-#include <tf/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <sensor_msgs/FluidPressure.h>
@@ -39,63 +38,68 @@
 #include <proc_navigation/SetDepthOffset.h>
 #include <proc_navigation/SetWorldXYOffset.h>
 
-#include "dvl_data.h"
-#include "imu_data.h"
+#include "proc_navigation/devices/dvl_data.h"
+#include "proc_navigation/devices/imu_data.h"
+#include "proc_navigation/ekf/extended_kalman_filter.h"
 
 namespace proc_navigation {
 
-class ProcNavigationNode {
- public:
+    class ProcNavigationNode {
+    public:
+        //==========================================================================
+        // P U B L I C   C / D T O R S
 
-  static constexpr double DegreeToRad = M_PI / 180.0f;
-  //==========================================================================
-  // P U B L I C   C / D T O R S
+        ProcNavigationNode(const ros::NodeHandlePtr &nh);
+        ~ProcNavigationNode();
 
-  ProcNavigationNode(const ros::NodeHandlePtr &nh);
-  ~ProcNavigationNode();
+        //==========================================================================
+        // P U B L I C   M E T H O D S
 
-  //==========================================================================
-  // P U B L I C   M E T H O D S
+        void Spin();
+        void ProcessCartesianPose();
+        void PublishData();
 
-  void Spin();
-  void PublishData();
-  Eigen::Matrix3d EulerToRot(const Eigen::Vector3d &vec);
-  double DegreeToRadian(const double &degree);
+    private:
+        //==========================================================================
+        // P R I V A T E   M E T H O D S
 
- private:
-  //==========================================================================
-  // P R I V A T E   M E T H O D S
+        bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
+        bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
 
-  bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
-  bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
+        void FillPoseMsg(Eigen::Vector3d &position, Eigen::Vector3d &angle, nav_msgs::Odometry &msg);
+        void FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg);
 
-  void FillPoseMsg(Eigen::Vector3d position, geometry_msgs::Vector3 angle, nav_msgs::Odometry &msg);
-  void FillTwistMsg(geometry_msgs::Vector3 linear_velocity, geometry_msgs::Vector3 angular_velocity, nav_msgs::Odometry &msg);
+        //==========================================================================
+        // P R I V A T E   M E M B E R S
 
-  //==========================================================================
-  // P R I V A T E   M E M B E R S
+        ros::NodeHandlePtr nh_;
 
-  ros::NodeHandlePtr nh_;
+        ros::Subscriber dvlTwistSubscriber_;
+        ros::Subscriber dvlPressureSubscriber_;
+        ros::Subscriber imuSubscriber_;
 
-  ros::Subscriber dvl_twist_subscriber_;
-  ros::Subscriber dvl_pressure_subscriber_;
-  ros::Subscriber imu_subscriber_;
+        ros::Publisher  navigationOdomPublisher_;
 
-  ros::Publisher navigation_odom_publisher_;
+        ros::ServiceServer navigationDepthOffsetServer_;
+        ros::ServiceServer navigationXYOffsetServer_;
 
-  ros::ServiceServer navigation_depth_offset_server_;
-  ros::ServiceServer navigation_xy_offset_server_;
+        DvlData dvlData_;
+        IMUData imuData_;
 
-  DvlData dvl_data_;
-  IMUData imu_data_;
+        ExtendedKalmanFilter dvlFilter_;
+        Eigen::Vector3d      poseEstimation_;
 
-  double z_offset_;
-  Eigen::Vector3d position_;
-};
+        double zOffset_;
+        double positionFromDepth_;
 
-inline double ProcNavigationNode::DegreeToRadian(const double &degree) {
-  return degree * DegreeToRad;
-}
+        Eigen::Quaterniond quaternion_;
+        Eigen::Vector3d    position_;
+        Eigen::Vector3d    incrementPosition_;
+        Eigen::Vector3d    velocity_;
+        Eigen::Vector3d    angularVelocity_;
+        Eigen::Vector3d    eulerAngel_;
+
+    };
 
 }
 #endif  // PROC_NAVIGATION_NAVIGATION_NODE_H_

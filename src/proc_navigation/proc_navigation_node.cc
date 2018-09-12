@@ -1,5 +1,5 @@
 /**
- * \file	navigation.cc
+ * \file	proc_navigation_node.cc
  * \author	Etienne Boudreault-Pilon <etienne.b.pilon@gmail.com>
  * \date	24/01/2016
  *
@@ -25,148 +25,146 @@
 
 #include "proc_navigation/proc_navigation_node.h"
 
-namespace proc_navigation {
+	namespace proc_navigation {
 
-//==============================================================================
-// C / D T O R S   S E C T I O N
+	//==============================================================================
+	// C / D T O R S   S E C T I O N
 
-//-----------------------------------------------------------------------------
-//
-ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh) {
-  dvl_twist_subscriber_ = nh_->subscribe("/provider_dvl/dvl_twist", 100,
-                                           &DvlData::DvlTwistCallback, &dvl_data_);
-  dvl_pressure_subscriber_ = nh_->subscribe("/provider_dvl/dvl_pressure", 100,
-                                           &DvlData::DvlPressureCallback, &dvl_data_);
-  imu_subscriber_ = nh_->subscribe("/provider_imu/imu", 100,
-                                           &IMUData::IMUMsgCallback, &imu_data_);
+	//-----------------------------------------------------------------------------
+	//
+	ProcNavigationNode::ProcNavigationNode(const ros::NodeHandlePtr &nh) : nh_(nh), quaternion_(0.0, 0.0, 0.0, 0.0)
+    {
+		dvlTwistSubscriber_ = nh_->subscribe("/provider_dvl/dvl_twist", 100,
+												 &DvlData::DvlTwistCallback, &dvlData_);
 
-  navigation_depth_offset_server_ = nh_->advertiseService("/proc_navigation/set_depth_offset",
-                               &ProcNavigationNode::SetDepthOffsetCallback, this);
-  navigation_xy_offset_server_ = nh_->advertiseService("/proc_navigation/set_world_x_y_offset",
-                                  &ProcNavigationNode::SetWorldXYOffsetCallback, this);
+		dvlPressureSubscriber_ = nh_->subscribe("/provider_dvl/dvl_pressure", 100,
+												 &DvlData::DvlPressureCallback, &dvlData_);
 
-  position_.x() = 0.0;
-  position_.y() = 0.0;
-  position_.z() = 0.0;
+		imuSubscriber_ = nh_->subscribe("/provider_imu/imu", 100,
+												 &IMUData::IMUMsgCallback, &imuData_);
 
-  navigation_odom_publisher_ = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
-}
+		navigationDepthOffsetServer_ = nh_->advertiseService("/proc_navigation/set_depth_offset",
+									 &ProcNavigationNode::SetDepthOffsetCallback, this);
 
-//-----------------------------------------------------------------------------
-//
-ProcNavigationNode::~ProcNavigationNode() { }
-
-//==============================================================================
-// M E T H O D   S E C T I O N
-
-//-----------------------------------------------------------------------------
-//
-void ProcNavigationNode::Spin()
-{
-  ros::Rate r(100); // 100 hz
-  while(ros::ok()) {
-    ros::spinOnce();
-    PublishData();
-    r.sleep();
-  }
-}
-
-bool ProcNavigationNode::SetDepthOffsetCallback(
-    SetDepthOffset::Request &rqst,
-    SetDepthOffset::Response &response)
-{
-  z_offset_ = dvl_data_.GetPositionZFromPressure();
-
-  imu_data_.SetNewDataReady();
-
-  return true;
-}
-
-bool ProcNavigationNode::SetWorldXYOffsetCallback(
-    SetWorldXYOffset::Request &rqst,
-    SetWorldXYOffset::Response &response)
-{
-  position_.x() = 0.0f;
-  position_.y() = 0.0f;
-
-  imu_data_.SetNewDataReady();
-
-  return true;
-}
-
-//-----------------------------------------------------------------------------
-//
-void ProcNavigationNode::PublishData() {
-  if (dvl_data_.IsNewDataReady() ||
-      imu_data_.IsNewDataReady()) {
-
-    dvl_data_.SetNewDataUsed();
-    imu_data_.SetNewDataUsed();
-
-    nav_msgs::Odometry odometry_msg;
-    odometry_msg.header.frame_id = "NED";
-    odometry_msg.header.stamp = ros::Time::now();
-
-    geometry_msgs::Vector3 position = dvl_data_.GetPositionXYZ();
-    double position_from_depth = dvl_data_.GetPositionZFromPressure();
-    geometry_msgs::Vector3 velocity = dvl_data_.GetVelocityXYZ();
-    geometry_msgs::Vector3 angular_velocity = imu_data_.GetAngularVelocity();
-    geometry_msgs::Vector3 euler_angle = imu_data_.GetOrientation();
-    Eigen::Quaterniond quaternion = imu_data_.GetQuaternion();
-
-    Eigen::Affine3d transform;
-    Eigen::Vector3d incrementPose(position.x, position.y, position.z);
-
-    transform = quaternion;
-
-    position_ += transform * incrementPose;
-
-    position_.z() = position_from_depth - z_offset_;
-
-//    if (fabs(position_from_depth - position_.z) > 0.1) {
-//      position_.z = (position_from_depth + position_.z)/2;
-//    }
-
-    FillPoseMsg(position_, euler_angle, odometry_msg);
-    FillTwistMsg(velocity, angular_velocity, odometry_msg);
-
-    navigation_odom_publisher_.publish(odometry_msg);
-  }
-}
-
-//-----------------------------------------------------------------------------
-//
-void ProcNavigationNode::FillPoseMsg(Eigen::Vector3d position,
-                                     geometry_msgs::Vector3 angle,
-                                     nav_msgs::Odometry &msg) {
-  msg.pose.pose.position.x = position.x();
-  msg.pose.pose.position.y = position.y();
-  msg.pose.pose.position.z = position.z();
-  msg.pose.pose.orientation.x = angle.x;
-  msg.pose.pose.orientation.y = angle.y;
-  msg.pose.pose.orientation.z = angle.z;
-}
-
-//-----------------------------------------------------------------------------
-//
-void ProcNavigationNode::FillTwistMsg(geometry_msgs::Vector3 linear_velocity,
-                                      geometry_msgs::Vector3 angular_velocity,
-                                      nav_msgs::Odometry &msg) {
-  msg.twist.twist.linear.x = linear_velocity.x;
-  msg.twist.twist.linear.y = linear_velocity.y;
-  msg.twist.twist.linear.z = linear_velocity.z;
-  msg.twist.twist.angular.x = angular_velocity.x;
-  msg.twist.twist.angular.y = angular_velocity.y;
-  msg.twist.twist.angular.z = angular_velocity.z;
-}
+		navigationXYOffsetServer_ = nh_->advertiseService("/proc_navigation/set_world_x_y_offset",
+										&ProcNavigationNode::SetWorldXYOffsetCallback, this);
 
 
-Eigen::Matrix3d ProcNavigationNode::EulerToRot(const Eigen::Vector3d &vec) {
-  Eigen::Matrix3d m;
-  m = Eigen::AngleAxisd(vec.x(), Eigen::Vector3d::UnitZ())
-      * Eigen::AngleAxisd(vec.y(), Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(vec.z(), Eigen::Vector3d::UnitX());
-  return m;
-}
+		navigationOdomPublisher_ = nh_->advertise<nav_msgs::Odometry>("/proc_navigation/odom", 100);
+
+	    position_          = Eigen::Vector3d::Zero();
+	    incrementPosition_ = Eigen::Vector3d::Zero();
+	    velocity_          = Eigen::Vector3d::Zero();
+	    angularVelocity_   = Eigen::Vector3d::Zero();
+	    eulerAngel_        = Eigen::Vector3d::Zero();
+
+	}
+
+	//-----------------------------------------------------------------------------
+	//
+	ProcNavigationNode::~ProcNavigationNode()
+    {
+        dvlTwistSubscriber_.shutdown();
+        dvlPressureSubscriber_.shutdown();
+        imuSubscriber_.shutdown();
+        navigationDepthOffsetServer_.shutdown();
+        navigationXYOffsetServer_.shutdown();
+    }
+
+	//==============================================================================
+	// M E T H O D   S E C T I O N
+
+	//-----------------------------------------------------------------------------
+	//
+	void ProcNavigationNode::Spin()
+	{
+		ros::Rate r(100); // 100 hz
+		while(ros::ok())
+        {
+			ros::spinOnce();
+            ProcessCartesianPose();
+			r.sleep();
+		}
+	}
+
+	bool ProcNavigationNode::SetDepthOffsetCallback(SetDepthOffset::Request &request,
+													SetDepthOffset::Response &response)
+	{
+		zOffset_ = dvlData_.GetPositionZFromPressure();
+		imuData_.SetNewDataReady();
+		return true;
+	}
+
+	bool ProcNavigationNode::SetWorldXYOffsetCallback(SetWorldXYOffset::Request &request,
+													  SetWorldXYOffset::Response &response)
+	{
+		position_.x() = 0.0f;
+		position_.y() = 0.0f;
+		dvlData_.SetNewDataReady();
+		return true;
+	}
+
+	//-----------------------------------------------------------------------------
+	//
+	void ProcNavigationNode::ProcessCartesianPose()
+	{
+		if (dvlData_.IsNewDataReady() || imuData_.IsNewDataReady())
+		{
+		    dvlData_.SetNewDataUsed();
+		    imuData_.SetNewDataUsed();
+
+		    incrementPosition_ = dvlData_.GetPositionXYZ();
+		    positionFromDepth_ = dvlData_.GetPositionZFromPressure();
+		    velocity_          = dvlData_.GetVelocityXYZ();
+		    angularVelocity_   = imuData_.GetAngularVelocity();
+		    eulerAngel_        = imuData_.GetOrientation();
+		    quaternion_        = imuData_.GetQuaternion();
+
+		    position_ += quaternion_.toRotationMatrix() * incrementPosition_;
+
+		    position_.z() = positionFromDepth_ - zOffset_;
+
+            dvlFilter_.Update(position_, poseEstimation_);
+
+            PublishData();
+		}
+	}
+    //-----------------------------------------------------------------------------
+    //
+    void ProcNavigationNode::PublishData()
+    {
+        nav_msgs::Odometry odometry_msg;
+        odometry_msg.header.frame_id = "NED";
+        odometry_msg.header.stamp = ros::Time::now();
+
+        FillPoseMsg(poseEstimation_, eulerAngel_, odometry_msg);
+        FillTwistMsg(velocity_, angularVelocity_, odometry_msg);
+
+        navigationOdomPublisher_.publish(odometry_msg);
+    }
+
+	//-----------------------------------------------------------------------------
+	//
+	void ProcNavigationNode::FillPoseMsg(Eigen::Vector3d &position, Eigen::Vector3d &angle, nav_msgs::Odometry &msg)
+	{
+		msg.pose.pose.position.x    = position.x();
+		msg.pose.pose.position.y    = position.y();
+		msg.pose.pose.position.z    = position.z();
+		msg.pose.pose.orientation.x = angle.x();
+		msg.pose.pose.orientation.y = angle.y();
+		msg.pose.pose.orientation.z = angle.z();
+	}
+
+	//-----------------------------------------------------------------------------
+	//
+	void ProcNavigationNode::FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg)
+	{
+		msg.twist.twist.linear.x  = linear_velocity.x();
+		msg.twist.twist.linear.y  = linear_velocity.y();
+		msg.twist.twist.linear.z  = linear_velocity.z();
+		msg.twist.twist.angular.x = angular_velocity.x();
+		msg.twist.twist.angular.y = angular_velocity.y();
+		msg.twist.twist.angular.z = angular_velocity.z();
+	}
 
 }  // namespace proc_navigation
