@@ -42,21 +42,16 @@ set(proc_navigation_SRC_DIR "src")
 #===============================================================================
 # C A T K I N   C O N F I G U R A T I O N
 
+find_package(PkgConfig)
+
 find_package(
     catkin REQUIRED COMPONENTS
     roscpp
     std_msgs
     message_generation
-    provider_dvl
-    sonia_msgs
     geometry_msgs
     sensor_msgs
-    lib_atlas
-)
-
-add_message_files(
-    DIRECTORY msg
-    FILES
+    tf
 )
 
 add_service_files(
@@ -69,40 +64,39 @@ add_service_files(
 # Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
+  std_msgs geometry_msgs sensor_msgs  # Or other packages containing msgs
 )
 
 catkin_package(
     INCLUDE_DIRS ${proc_navigation_SRC_DIR}
     LIBRARIES
-    CATKIN_DEPENDS roscpp message_runtime std_msgs provider_dvl lib_atlas sonia_msgs
+    CATKIN_DEPENDS roscpp message_runtime std_msgs
 )
 
 #===============================================================================
 # I N C L U D E   F I L E S
 
 file(GLOB_RECURSE proc_navigation_FILES
-    "${proc_navigation_SRC_DIR}/*.cc"
-    "${proc_navigation_SRC_DIR}/*.h")
+        "${proc_navigation_SRC_DIR}/*.cc"
+        "${proc_navigation_SRC_DIR}/*.h")
 
 list(REMOVE_ITEM proc_navigation_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc)
+        ${CMAKE_CURRENT_SOURCE_DIR}/${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc)
 
+# Include all the directories where source can be found.
 include_directories(
-    ${catkin_INCLUDE_DIRS}
-    ${proc_navigation_SRC_DIR}
-    ${lib_atlas_INCLUDE_DIRS}
-    ${provider_dvl_INCLUDE_DIRS}
-)
+        ${catkin_INCLUDE_DIRS}
+        ${proc_navigation_SRC_DIR})
+
 
 #==========================================================================
 # C R E A T E   E X E C U T A B L E
 
 add_executable(${PROJECT_NAME}_node ${proc_navigation_SRC_DIR}/${PROJECT_NAME}/main.cc ${proc_navigation_FILES})
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} ${lib_atlas_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_node
-        sonia_msgs_generate_messages_cpp
-        ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(${PROJECT_NAME}_node
+                      ${catkin_LIBRARIES}
+                      ${BFL_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_generate_messages_cpp)
 
 #==========================================================================
 # U N I T   T E S T S

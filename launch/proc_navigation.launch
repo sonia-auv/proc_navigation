@@ -4,12 +4,6 @@
 	    type="proc_navigation_node"
 	    output="log" />
 
-	<node name="redirect_imu_to_dvl"
-	    pkg="proc_navigation"
-	    type="redirect_imu_to_dvl.py"
-	    args="-b 19200 -P 7334 --port=/dev/ttyS1"
-	    output="screen" />
-	
 	<node name="tf_enu_to_ned"
 	      pkg="tf"
 	      type="static_transform_publisher"
