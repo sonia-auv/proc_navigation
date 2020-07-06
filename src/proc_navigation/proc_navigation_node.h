@@ -35,8 +35,8 @@
 #include <sensor_msgs/Imu.h>
 #include <nav_msgs/Odometry.h>
 
-#include <proc_navigation/SetDepthOffset.h>
-#include <proc_navigation/SetWorldXYOffset.h>
+#include <sonia_msgs/SetDepthOffset.h>
+#include <sonia_msgs/SetWorldXYOffset.h>
 
 #include "proc_navigation/devices/dvl_data.h"
 #include "proc_navigation/devices/imu_data.h"
@@ -63,8 +63,8 @@ namespace proc_navigation {
         //==========================================================================
         // P R I V A T E   M E T H O D S
 
-        bool SetDepthOffsetCallback(SetDepthOffset::Request &rqst, SetDepthOffset::Response &response);
-        bool SetWorldXYOffsetCallback(SetWorldXYOffset::Request &rqst, SetWorldXYOffset::Response &response);
+        bool SetDepthOffsetCallback(sonia_msgs::SetDepthOffset::Request &rqst, sonia_msgs::SetDepthOffset::Response &response);
+        bool SetWorldXYOffsetCallback(sonia_msgs::SetWorldXYOffset::Request &rqst, sonia_msgs::SetWorldXYOffset::Response &response);
 
         void FillPoseMsg(Eigen::Vector3d &position, Eigen::Vector3d &angle, nav_msgs::Odometry &msg);
         void FillTwistMsg(Eigen::Vector3d &linear_velocity, Eigen::Vector3d &angular_velocity, nav_msgs::Odometry &msg);

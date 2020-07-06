@@ -48,29 +48,16 @@ find_package(
     catkin REQUIRED COMPONENTS
     roscpp
     std_msgs
-    message_generation
     geometry_msgs
     sensor_msgs
     tf
-)
-
-add_service_files(
-        DIRECTORY srv
-        FILES
-        SetDepthOffset.srv
-        SetWorldXYOffset.srv
-)
-
-# Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs geometry_msgs sensor_msgs  # Or other packages containing msgs
+    sonia_msgs
 )
 
 catkin_package(
     INCLUDE_DIRS ${proc_navigation_SRC_DIR}
     LIBRARIES
-    CATKIN_DEPENDS roscpp message_runtime std_msgs
+    CATKIN_DEPENDS roscpp std_msgs sonia_msgs
 )
 
 #===============================================================================
@@ -96,7 +83,7 @@ add_executable(${PROJECT_NAME}_node ${proc_navigation_SRC_DIR}/${PROJECT_NAME}/m
 target_link_libraries(${PROJECT_NAME}_node
                       ${catkin_LIBRARIES}
                       ${BFL_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 
 #==========================================================================
 # U N I T   T E S T S
