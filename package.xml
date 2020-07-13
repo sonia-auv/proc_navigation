@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package>
   <name>proc_navigation</name>
-  <version>0.0.0</version>
+  <version>1.0.1</version>
   <description>The proc_navigation package</description>
 
-  <maintainer email="etienne@todo.todo">etienne</maintainer>
+  <maintainer email="sonia.auv@etsmtl.ca">SONIA AUV</maintainer>
 
   <license>GPLv3</license>
 
