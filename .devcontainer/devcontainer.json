@@ -22,7 +22,7 @@
     	"mounts": [
         	"source=vscode-server-extension,target=/home/sonia/.vscode-server/extensions,type=volume"
     	],
-	"workspaceMount": "target=/home/sonia/ros_sonia_ws/src/proc_navigation,type=bind,consistency=cached",
+	"workspaceMount": "target=/home/sonia/ros_sonia_ws/src/proc_navigation,type=volume",
 	"workspaceFolder": "/home/sonia/ros_sonia_ws/src/proc_navigation"
 }
 
