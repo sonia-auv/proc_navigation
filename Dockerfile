@@ -40,5 +40,7 @@ RUN echo "roslaunch --wait $LAUNCH_ABSPATH" > ${SCRIPT_DIR}/launch.sh
 
 RUN chmod +x ${SCRIPT_DIR}/entrypoint.sh && chmod +x ${SCRIPT_DIR}/launch.sh 
 
+RUN echo "source $SONIA_WS_SETUP" >> ~/.bashrc
+
 ENTRYPOINT ["./scripts/entrypoint.sh"]
 CMD ["./scripts/launch.sh"]
