@@ -1,79 +1,90 @@
-# Proc Navigation
+# proc_navigation
 
-This node is part of S.O.N.I.A's AUV7 software. Is use to computed the AUV global pose in the North East Down (N.E.D) referential.
+Proc navigation is a node that map location of the sub during a run (e.g: Running a mission)
+
+![Docker Image CI - Master Branch](https://github.com/sonia-auv/proc_navigation/workflows/Docker%20Image%20CI%20-%20Master%20Branch/badge.svg)
+![Docker Image CI - Develop Branch](https://github.com/sonia-auv/proc_navigation/workflows/Docker%20Image%20CI%20-%20Develop%20Branch/badge.svg?branch=develop)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/sonia-auv/proc_navigation)
+![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/sonia-auv/proc_navigation.svg)
 
 ## Getting Started
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
+Clone current project by using following command :
 ```bash
-$ git clone https://github.com/sonia-auv/proc_navigation
+    git clone git@github.com:sonia-auv/proc_navigation.git
 ```
 
 ### Prerequisites
 
-You must install S.O.N.I.A's ROS repositories to use this module.
+First and foremost to run the module you will need to have [docker](https://www.docker.com/get-started?utm_source=google&utm_medium=cpc&utm_campaign=getstarted&utm_content=sitelink&utm_term=getstarted&utm_budget=growth&gclid=CjwKCAjw57b3BRBlEiwA1Imytuv9VRFX5Z0INBaD3JJNSUmadgQh7ZYWTw_r-yFn2S4XjZTsLbNnnBoCPsIQAvD_BwE) installed.
 
-S.O.N.I.A's installation instruction are available at [SONIA's Installation](https://sonia-auv.readthedocs.io/user/installation/)
+To validate your installation of docker, simply type in
 
-### Development
+```
+docker -v
+```
 
-##### Devices
+If you receive an output in the likes of :
+```
+Docker version 19.03.5, build 633a0ea
+```
 
-The devices used to find out the globe pose of the AUV is an [IMU](https://en.wikipedia.org/wiki/Inertial_measurement_unit) and a [DVL](https://en.wikipedia.org/wiki/Acoustic_Doppler_current_profiler#Bottom_tracking).
+It means you have it installed. If not follow instructions on how to install it for your OS.
 
-In AUV7 software the IMU and DVL information is provide by [provider_imu](https://github.com/sonia-auv/provider_imu) node and [provider_dvl](https://github.com/sonia-auv/provider_dvl) node. 
+### Installing
 
-##### Input 
+A step by step series of examples that tell you how to get a development env running
 
-Input information is provide to the node using this ROS msgs :
+Say what the step will be
 
-* IMU information [sensor_msgs IMU](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/Imu.html) 
-* DVL information [geometry_msgs TwistStamped](http://docs.ros.org/api/geometry_msgs/html/msg/TwistStamped.html) and [sensor_msgs FluidPressure](http://docs.ros.org/melodic/api/sensor_msgs/html/msg/FluidPressure.html)
+```
+Give the example
+```
 
-##### Output
+And repeat
 
-Output information is provide to other node using this ROS msg :
+```
+until finished
+```
 
-* Pose and Twist information [nav_msgs Odometry](http://docs.ros.org/melodic/api/nav_msgs/html/msg/Odometry.html)
-
-Orientation information is not output as quaternion but as euler angle.
-
-##### Algorithms
-
-The DVL information (velocity) is transform to position (xyz) using [numerical integration](https://en.wikipedia.org/wiki/Numerical_integration). We use the [Runge-Kutta](https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods) methods to reduce error during the integration process. A standard numerical integration method is also available.
-
-The IMU information ([quaternion](https://en.wikipedia.org/wiki/Quaternion)) is transform to [euler angles](https://en.wikipedia.org/wiki/Euler_angles).
-
-The Pose, based on N.E.D referential, is find out using [rotation matrix](https://en.wikipedia.org/wiki/Rotation_matrix) transformation.
-
-An [Extended Kalman filter](https://en.wikipedia.org/wiki/Extended_Kalman_filter) is implemented in this node. Is used as a state estimator on AUV pose. Implementation is based on this repository [TinyEKF](https://github.com/simondlevy/TinyEKF). 
+End with an example of getting some data out of the system or using it for a little demo
 
 ## Running the tests
 
-No tests implemented yet. You can run a [simulation](https://github.com/sonia-auv/proc_control/blob/develop/script/AuvSimulation.py) to test new navigation algorithms. It's highly recommended to test the node on a real system.
+Explain how to run the automated tests for this system
+
+### Break down into end to end tests
+
+Explain what these tests test and why
+
+```
+Give an example
+```
+
+### And coding style tests
+
+Explain what these tests test and why
+
+```
+Give an example
+```
+
+## Deployment
+
+Add additional notes about how to deploy this on a live system
 
 ## Built With
 
-* [ROS](http://www.ros.org/) - ROS Robotic Operating System
-* [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) - Linear algebra
+Add additional project dependencies
 
-## Contributing
+* [ROS](http://wiki.ros.org/) - ROS robotic framework
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
 
-## Authors
+## Versioning
 
-* **Thibaut Mattio** - *Initial work* - [tmattio](https://github.com/tmattio)
-* **Etienne Boudreault-Pilon** - *Initial work* - [etiennepilon](https://github.com/etiennepilon)
-* **Jérémie St-Jules Prévôt** - *Initial work* - [jsprevost](https://github.com/jsprevost)
-
-### Contributors
-* **Francis Massé** - [fmassey](https://github.com/fmassey)
-* **Olivier Lavoie** - [olavoie](https://github.com/olavoie)
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## License
 
-This project is licensed under the GNU GPL V3 License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Extended Kalman filter implementation is based on [TinyEKF](https://github.com/simondlevy/TinyEKF). 
+This project is licensed under the GNU License - see the [LICENSE](LICENSE) file for details
