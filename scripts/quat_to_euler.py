@@ -12,7 +12,7 @@ from math import atan2, asin, sqrt
 # ROS messages.
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
-from sonia_msgs.msg import Eulers
+from sonia_common.msg import Eulers
 
 
 class QuatToEuler:

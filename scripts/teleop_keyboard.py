@@ -4,12 +4,12 @@ import numpy
 import roslib
 import math
 
-roslib.load_manifest('proc_navigation')
+roslib.load_manifest("proc_navigation")
 import rospy
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu, FluidPressure
-from sonia_msgs.msg import BottomTracking
+from sonia_common.msg import BottomTracking
 
 import sys, select, termios, tty
 
@@ -34,14 +34,14 @@ CTRL-C to quit
 """
 
 move_bindings = {
-    'w': (0.5, 0, 0, 0),
-    's': (-0.5, 0, 0, 0),
-    'a': (0, 0.5, 0, 0),
-    'd': (0, -0.5, 0, 0),
-    'r': (0, 0, -0.5, 0),
-    'f': (0, 0, 0.5, 0),
-    'q': (0, 0, 0, 0.5),
-    'e': (0, 0, 0, -0.5),
+    "w": (0.5, 0, 0, 0),
+    "s": (-0.5, 0, 0, 0),
+    "a": (0, 0.5, 0, 0),
+    "d": (0, -0.5, 0, 0),
+    "r": (0, 0, -0.5, 0),
+    "f": (0, 0, 0.5, 0),
+    "q": (0, 0, 0, 0.5),
+    "e": (0, 0, 0, -0.5),
 }
 
 
@@ -60,8 +60,8 @@ def euler_to_quat(ai, aj, ak):
     _NEXT_AXIS = [1, 2, 0, 1]
 
     i = firstaxis
-    j = _NEXT_AXIS[i+parity]
-    k = _NEXT_AXIS[i-parity+1]
+    j = _NEXT_AXIS[i + parity]
+    k = _NEXT_AXIS[i - parity + 1]
 
     if frame:
         ai, ak = ak, ai
@@ -77,22 +77,22 @@ def euler_to_quat(ai, aj, ak):
     sj = math.sin(aj)
     ck = math.cos(ak)
     sk = math.sin(ak)
-    cc = ci*ck
-    cs = ci*sk
-    sc = si*ck
-    ss = si*sk
+    cc = ci * ck
+    cs = ci * sk
+    sc = si * ck
+    ss = si * sk
 
-    quaternion = numpy.empty((4, ), dtype=numpy.float64)
+    quaternion = numpy.empty((4,), dtype=numpy.float64)
     if repetition:
-        quaternion[i] = cj*(cs + sc)
-        quaternion[j] = sj*(cc + ss)
-        quaternion[k] = sj*(cs - sc)
-        quaternion[3] = cj*(cc - ss)
+        quaternion[i] = cj * (cs + sc)
+        quaternion[j] = sj * (cc + ss)
+        quaternion[k] = sj * (cs - sc)
+        quaternion[3] = cj * (cc - ss)
     else:
-        quaternion[i] = cj*sc - sj*cs
-        quaternion[j] = cj*ss + sj*cc
-        quaternion[k] = cj*cs - sj*sc
-        quaternion[3] = cj*cc + sj*ss
+        quaternion[i] = cj * sc - sj * cs
+        quaternion[j] = cj * ss + sj * cc
+        quaternion[k] = cj * cs - sj * sc
+        quaternion[3] = cj * cc + sj * ss
     if parity:
         quaternion[j] *= -1
 
@@ -105,7 +105,7 @@ def get_key():
     key = sys.stdin.read(1)
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 
-    if key == '\x1b' or key == '\x03':
+    if key == "\x1b" or key == "\x03":
         exit(0)
     return key
 
@@ -135,10 +135,14 @@ def get_odom_from_key():
 if __name__ == "__main__":
     settings = termios.tcgetattr(sys.stdin)
 
-    dvl_pub = rospy.Publisher('/provider_dvl/bottom_tracking', BottomTracking, queue_size=100)
-    imu_pub = rospy.Publisher('/provider_imu/imu', Imu, queue_size=100)
-    baro_pub = rospy.Publisher('/provider_can/barometer_fluidpress_msgs', FluidPressure, queue_size=100)
-    rospy.init_node('teleop_keyboard')
+    dvl_pub = rospy.Publisher(
+        "/provider_dvl/bottom_tracking", BottomTracking, queue_size=100
+    )
+    imu_pub = rospy.Publisher("/provider_imu/imu", Imu, queue_size=100)
+    baro_pub = rospy.Publisher(
+        "/provider_can/barometer_fluidpress_msgs", FluidPressure, queue_size=100
+    )
+    rospy.init_node("teleop_keyboard")
 
     x = 0
     y = 0
