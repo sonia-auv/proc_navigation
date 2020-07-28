@@ -51,13 +51,13 @@ find_package(
     geometry_msgs
     sensor_msgs
     tf
-    sonia_msgs
+    sonia_common
 )
 
 catkin_package(
     INCLUDE_DIRS ${proc_navigation_SRC_DIR}
     LIBRARIES
-    CATKIN_DEPENDS roscpp std_msgs sonia_msgs
+    CATKIN_DEPENDS roscpp std_msgs sonia_common
 )
 
 #===============================================================================

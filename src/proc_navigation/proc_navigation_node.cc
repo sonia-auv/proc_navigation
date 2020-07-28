@@ -87,16 +87,16 @@
 		}
 	}
 
-	bool ProcNavigationNode::SetDepthOffsetCallback(sonia_msgs::SetDepthOffset::Request &request,
-													sonia_msgs::SetDepthOffset::Response &response)
+	bool ProcNavigationNode::SetDepthOffsetCallback(sonia_common::SetDepthOffset::Request &request,
+													sonia_common::SetDepthOffset::Response &response)
 	{
 		zOffset_ = dvlData_.GetPositionZFromPressure();
 		imuData_.SetNewDataReady();
 		return true;
 	}
 
-	bool ProcNavigationNode::SetWorldXYOffsetCallback(sonia_msgs::SetWorldXYOffset::Request &request,
-													  sonia_msgs::SetWorldXYOffset::Response &response)
+	bool ProcNavigationNode::SetWorldXYOffsetCallback(sonia_common::SetWorldXYOffset::Request &request,
+													  sonia_common::SetWorldXYOffset::Response &response)
 	{
 		position_.x() = 0.0f;
 		position_.y() = 0.0f;
