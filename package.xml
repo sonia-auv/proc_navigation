@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>proc_navigation</name>
-  <version>1.0.2</version>
+  <version>1.1.0</version>
   <description>The proc_navigation package</description>
 
   <maintainer email="sonia.auv@etsmtl.ca">SONIA AUV</maintainer>
@@ -13,18 +13,16 @@
   <build_depend>roscpp</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>bfl</build_depend>
-  <build_depend>sonia_msgs</build_depend>
+  <build_depend>sonia_common</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>sonia_msgs</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>bfl</run_depend>
-  <run_depend>sonia_msgs</run_depend>
+  <run_depend>sonia_common</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>sonia_msgs</run_depend>
 </package>
